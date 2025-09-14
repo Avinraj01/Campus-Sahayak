@@ -274,7 +274,14 @@ async def get_chat_history(session_id: str):
             {"session_id": session_id}
         ).sort("timestamp", 1).to_list(length=50)
         
-        return {"history": history}
+        # Remove MongoDB ObjectId from response to prevent serialization errors
+        cleaned_history = []
+        for item in history:
+            if '_id' in item:
+                del item['_id']
+            cleaned_history.append(item)
+        
+        return {"history": cleaned_history}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
