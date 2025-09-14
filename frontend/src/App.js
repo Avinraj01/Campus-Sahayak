@@ -339,7 +339,7 @@ const HomePage = () => {
       {!isChatOpen && (
         <Button
           onClick={() => setIsChatOpen(true)}
-          className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200 z-40"
+          className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-200 z-50"
         >
           <MessageCircle className="h-6 w-6" />
         </Button>
