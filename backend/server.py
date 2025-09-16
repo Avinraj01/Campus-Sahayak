@@ -730,7 +730,7 @@ async def chat_endpoint(request: ChatRequest, current_user: User = Depends(get_c
                 },
                 model="openai/gpt-4o",
                 messages=messages,
-                max_tokens=500,
+                max_tokens=200,
                 temperature=0.7
             )
             
