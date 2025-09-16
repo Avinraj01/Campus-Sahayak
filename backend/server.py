@@ -28,8 +28,24 @@ IN_MEMORY_USERS = {}
 try:
     mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017/campus_management')
     client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=1000)  # Short timeout
+    # Test connection explicitly
     db = client[os.environ.get('DB_NAME', 'campus_management')]
-    print("MongoDB client initialized - connection will be tested on first request")
+    # Run a simple command to test the connection
+    import asyncio
+    async def test_connection():
+        try:
+            await client.admin.command('ping')
+            print("MongoDB connection test successful")
+        except Exception as e:
+            print(f"MongoDB connection test failed: {e}")
+    
+    # Run the test connection
+    try:
+        asyncio.run(test_connection())
+    except Exception as e:
+        print(f"Error running MongoDB connection test: {e}")
+        
+    print("MongoDB client initialized")
 except Exception as e:
     print(f"MongoDB client initialization failed: {e} - using fallback mode")
     client = None
@@ -278,7 +294,7 @@ def get_language_instruction(language: str) -> str:
         "en": "Please respond in English.",
         "hi": "कृपया हिंदी में जवाब दें।",
         "raj": "कृपया राजस्थानी में जवाब दें।",
-        "te": "దయచేసి తెలుగులో సమాధానం ఇవ్వండి।",
+        "te": "�యచేసి తెలుగులో సమాధానం ఇవ్వండి।",
         "gu": "કૃપા કરીને ગુજરાતીમાં જવાબ આપો।",
         "ur": "براہ کرم اردو میں جواب دیں۔"
     }
@@ -1154,8 +1170,8 @@ async def api_info():
 
 app.add_middleware(
     CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://localhost:8000"],
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
     allow_methods=["*"],
     allow_headers=["*"],
 )

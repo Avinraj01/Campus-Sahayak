@@ -25,6 +25,8 @@ import NoticesPage from "./components/NoticesPage";
 import ContactPage from "./components/ContactPage";
 import FormsPage from "./components/FormsPage";
 
+import { testApiConnection } from './test-api';
+
 // Utility function to remove any Emergent badges
 const removeEmergentBadges = () => {
   const selectors = [
@@ -86,7 +88,8 @@ const observeEmergentBadges = () => {
 };
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+// Use relative URLs to leverage the proxy
+const API = '/api';
 
 const LANGUAGES = {
   en: "English",
@@ -100,6 +103,22 @@ const LANGUAGES = {
 // Auth Context
 const AuthContext = createContext();
 const useAuth = () => useContext(AuthContext);
+
+// Test login functionality
+const testLogin = async () => {
+  try {
+    console.log('Testing login functionality...');
+    const response = await axios.post('/api/auth/login', {
+      identifier: 'test3@example.com',
+      password: 'password123',
+      user_type: 'student'
+    });
+    console.log('Login test successful:', response.data);
+  } catch (error) {
+    console.error('Login test failed:', error);
+    console.error('Error response:', error.response);
+  }
+};
 
 // Auth Provider Component
 const AuthProvider = ({ children }) => {
@@ -119,6 +138,12 @@ const AuthProvider = ({ children }) => {
       }
     }
     setLoading(false);
+    
+    // Test API connection
+    testApiConnection();
+    
+    // Test login functionality
+    testLogin();
   }, [token]);
 
   const login = (userData, accessToken) => {
@@ -196,9 +221,9 @@ const LoginPage = () => {
       console.error('Error response:', error.response);
       
       const errorMessage = error.response?.data?.detail || 
-                          error.response?.data?.message || 
-                          error.message || 
-                          'Login failed - please check your credentials';
+                        error.response?.data?.message || 
+                        error.message || 
+                        'Login failed - please check your credentials';
       
       alert(errorMessage);
     } finally {
@@ -224,9 +249,9 @@ const LoginPage = () => {
       console.error('Error response:', error.response);
       
       const errorMessage = error.response?.data?.detail || 
-                          error.response?.data?.message || 
-                          error.message || 
-                          'Registration failed - please check your connection';
+                        error.response?.data?.message || 
+                        error.message || 
+                        'Registration failed - please check your connection';
       
       alert(errorMessage);
     } finally {
