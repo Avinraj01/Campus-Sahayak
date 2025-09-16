@@ -17,6 +17,74 @@ import {
   ExternalLink, Headphones, Volume2
 } from "lucide-react";
 
+// Import page components
+import ComplaintsPage from "./components/ComplaintsPage";
+import StudentPortalPage from "./components/StudentPortalPage";
+import CalendarPage from "./components/CalendarPage";
+import NoticesPage from "./components/NoticesPage";
+import ContactPage from "./components/ContactPage";
+import FormsPage from "./components/FormsPage";
+
+// Utility function to remove any Emergent badges
+const removeEmergentBadges = () => {
+  const selectors = [
+    '#emergent-badge',
+    '[id*="emergent"]',
+    '[class*="emergent"]',
+    'a[href*="emergent.sh"]',
+    'a[href*="app.emergent"]',
+    '*[data-emergent]',
+    '*[data-testid*="emergent"]'
+  ];
+  
+  selectors.forEach(selector => {
+    try {
+      const elements = document.querySelectorAll(selector);
+      elements.forEach(element => {
+        if (element && element.parentNode) {
+          element.parentNode.removeChild(element);
+        }
+      });
+    } catch (e) {
+      console.log('Could not remove element with selector:', selector);
+    }
+  });
+};
+
+// Observer to watch for dynamically added badges
+const observeEmergentBadges = () => {
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.type === 'childList') {
+        mutation.addedNodes.forEach((node) => {
+          if (node.nodeType === 1) { // Element node
+            const element = node;
+            if (element.id && element.id.includes('emergent')) {
+              element.remove();
+            }
+            if (element.className && (element.className.toString().includes('emergent') || element.classList.contains('emergent'))) {
+              element.remove();
+            }
+            if (element.href && element.href.includes('emergent')) {
+              element.remove();
+            }
+            // Check children
+            const emergentChildren = element.querySelectorAll('[id*="emergent"], [class*="emergent"], [href*="emergent"]');
+            emergentChildren.forEach(child => child.remove());
+          }
+        });
+      }
+    });
+  });
+  
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+  
+  return observer;
+};
+
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
@@ -115,11 +183,24 @@ const LoginPage = () => {
     setLoading(true);
     
     try {
+      console.log('Attempting login with:', formData);
+      console.log('API URL:', `${API}/auth/login`);
+      
       const response = await axios.post(`${API}/auth/login`, formData);
+      console.log('Login successful:', response.data);
+      
       login(response.data.user, response.data.access_token);
       navigate('/dashboard');
     } catch (error) {
-      alert(error.response?.data?.detail || 'Login failed');
+      console.error('Login error:', error);
+      console.error('Error response:', error.response);
+      
+      const errorMessage = error.response?.data?.detail || 
+                          error.response?.data?.message || 
+                          error.message || 
+                          'Login failed - please check your credentials';
+      
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -130,11 +211,24 @@ const LoginPage = () => {
     setLoading(true);
     
     try {
+      console.log('Attempting registration with data:', signupData);
+      console.log('API URL:', `${API}/auth/register`);
+      
       const response = await axios.post(`${API}/auth/register`, signupData);
+      console.log('Registration successful:', response.data);
+      
       login(response.data.user, response.data.access_token);
       navigate('/dashboard');
     } catch (error) {
-      alert(error.response?.data?.detail || 'Registration failed');
+      console.error('Registration error:', error);
+      console.error('Error response:', error.response);
+      
+      const errorMessage = error.response?.data?.detail || 
+                          error.response?.data?.message || 
+                          error.message || 
+                          'Registration failed - please check your connection';
+      
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -866,8 +960,28 @@ const Dashboard = () => {
   );
 };
 
+// Export useAuth for use in other components
+export { useAuth };
+
 // App Component
 function App() {
+  useEffect(() => {
+    // Remove any existing emergent badges
+    removeEmergentBadges();
+    
+    // Start observing for dynamically added badges
+    const observer = observeEmergentBadges();
+    
+    // Also run removal on interval as backup
+    const interval = setInterval(removeEmergentBadges, 1000);
+    
+    // Cleanup
+    return () => {
+      observer.disconnect();
+      clearInterval(interval);
+    };
+  }, []);
+  
   return (
     <div className="App">
       <AuthProvider>
@@ -879,7 +993,38 @@ function App() {
                 <Dashboard />
               </ProtectedRoute>
             } />
+            <Route path="/complaints" element={
+              <ProtectedRoute>
+                <ComplaintsPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/student-portal" element={
+              <ProtectedRoute>
+                <StudentPortalPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/calendar" element={
+              <ProtectedRoute>
+                <CalendarPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/notices" element={
+              <ProtectedRoute>
+                <NoticesPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/contact" element={
+              <ProtectedRoute>
+                <ContactPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/forms" element={
+              <ProtectedRoute>
+                <FormsPage />
+              </ProtectedRoute>
+            } />
             <Route path="/" element={<Navigate to="/dashboard" />} />
+            <Route path="*" element={<Navigate to="/dashboard" />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

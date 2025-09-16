@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎓 Campus Management System - Public Portal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 800px;
+            width: 90%;
+            text-align: center;
+        }
+        
+        .header {
+            margin-bottom: 40px;
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 32px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.2em;
+        }
+        
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+        
+        .app-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-left: 5px solid;
+        }
+        
+        .app-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .campus-management {
+            border-left-color: #3498db;
+        }
+        
+        .codeshare {
+            border-left-color: #e74c3c;
+        }
+        
+        .api-docs {
+            border-left-color: #2ecc71;
+        }
+        
+        .app-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        .app-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .app-description {
+            color: #7f8c8d;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .app-link {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            display: inline-block;
+            transition: opacity 0.3s ease;
+        }
+        
+        .app-link:hover {
+            opacity: 0.9;
+        }
+        
+        .network-info {
+            background: #ecf0f1;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 30px 0;
+        }
+        
+        .network-info h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .network-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .network-link {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.9em;
+            color: #34495e;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🎓</div>
+            <h1>Campus Management System</h1>
+            <p class="subtitle">Complete Digital Campus Solution</p>
+        </div>
+        
+        <div class="apps-grid">
+            <div class="app-card campus-management">
+                <div class="app-icon">🏛️</div>
+                <div class="app-title">Campus Management</div>
+                <div class="app-description">
+                    Main student portal with authentication, complaints, notices, forms, and AI chat assistant. 
+                    Complete campus management solution for students and faculty.
+                </div>
+                <a href="https://9cb1aeedba51.ngrok-free.app" class="app-link" target="_blank">
+                    Access Campus Portal (Public)
+                </a>
+                <br><br>
+                <a href="http://192.168.0.2:3000" class="app-link" target="_blank">
+                    Access Portal (Network)
+                </a>
+            </div>
+            
+            <div class="app-card codeshare">
+                <div class="app-icon">💻</div>
+                <div class="app-title">CodeShare Platform</div>
+                <div class="app-description">
+                    Interactive full-stack application for code sharing and collaboration. 
+                    Built with Node.js, React, and modern web technologies.
+                </div>
+                <a href="http://localhost:5000" class="app-link" target="_blank">
+                    Open CodeShare
+                </a>
+            </div>
+            
+            <div class="app-card api-docs">
+                <div class="app-icon">📚</div>
+                <div class="app-title">API Documentation</div>
+                <div class="app-description">
+                    Complete API documentation with interactive Swagger UI. 
+                    Explore all endpoints, authentication, and testing capabilities.
+                </div>
+                <a href="http://192.168.0.2:8001/docs" class="app-link" target="_blank">
+                    View API Docs
+                </a>
+            </div>
+        </div>
+        
+        <div class="network-info">
+            <h3>🌐 Network Access Information</h3>
+            <div class="network-links">
+                <div class="network-link">
+                    <strong>Frontend:</strong><br>
+                    http://192.168.0.2:3000
+                </div>
+                <div class="network-link">
+                    <strong>Backend API:</strong><br>
+                    http://192.168.0.2:8001
+                </div>
+                <div class="network-link">
+                    <strong>CodeShare:</strong><br>
+                    http://localhost:5000
+                </div>
+                <div class="network-link">
+                    <strong>API Docs:</strong><br>
+                    http://192.168.0.2:8001/docs
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p><strong>Features:</strong> JWT Authentication • AI Chat Assistant • Multilingual Support • Mobile Responsive</p>
+            <p><strong>Technologies:</strong> React • FastAPI • Python • TypeScript • Tailwind CSS</p>
+            <p>Campus Management System © 2025 | Contact: avinyaduvansi123@gmail.com</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -6,12 +6,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { useAuth } from "../App";
 import { 
   User, BookOpen, CreditCard, Award, FileText, Calendar, 
-  Download, ExternalLink, GraduationCap, Clock, MapPin, Phone 
+  Download, ExternalLink, GraduationCap, Clock, MapPin, Phone,
+  Home, Bell, MessageSquare, LogOut
 } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 
 const StudentPortalPage = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState("profile");
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   // Mock student data (replace with actual API calls)
   const studentData = {
@@ -85,7 +93,63 @@ const StudentPortalPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 pt-20">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50">
+      {/* Navigation */}
+      <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-lg border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                <BookOpen className="h-6 w-6 text-white" />
+              </div>
+              <h1 className="text-xl font-bold text-slate-800">Campus Portal</h1>
+            </div>
+            
+            <div className="hidden md:flex items-center space-x-6">
+              <Link to="/dashboard" className="text-slate-600 hover:text-blue-600 font-medium transition-colors flex items-center space-x-1">
+                <Home className="h-4 w-4" />
+                <span>Home</span>
+              </Link>
+              <Link to="/complaints" className="text-slate-600 hover:text-blue-600 font-medium transition-colors flex items-center space-x-1">
+                <MessageSquare className="h-4 w-4" />
+                <span>Complaints</span>
+              </Link>
+              <Link to="/forms" className="text-slate-600 hover:text-blue-600 font-medium transition-colors flex items-center space-x-1">
+                <FileText className="h-4 w-4" />
+                <span>Forms</span>
+              </Link>
+              <Link to="/student-portal" className="text-blue-600 hover:text-blue-700 font-medium transition-colors flex items-center space-x-1">
+                <User className="h-4 w-4" />
+                <span>Portal</span>
+              </Link>
+              <Link to="/calendar" className="text-slate-600 hover:text-blue-600 font-medium transition-colors flex items-center space-x-1">
+                <Calendar className="h-4 w-4" />
+                <span>Calendar</span>
+              </Link>
+              <Link to="/notices" className="text-slate-600 hover:text-blue-600 font-medium transition-colors flex items-center space-x-1">
+                <Bell className="h-4 w-4" />
+                <span>Notices</span>
+              </Link>
+              <Link to="/contact" className="text-slate-600 hover:text-blue-600 font-medium transition-colors flex items-center space-x-1">
+                <Phone className="h-4 w-4" />
+                <span>Contact</span>
+              </Link>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <div className="text-sm text-slate-600">
+                Welcome, {user?.full_name}
+              </div>
+              <Button onClick={handleLogout} variant="outline" size="sm">
+                <LogOut className="h-4 w-4 mr-1" />
+                Logout
+              </Button>
+            </div>
+          </div>
+        </div>
+      </nav>
+      
+      <div className="pt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Student Portal</h1>
@@ -356,6 +420,7 @@ const StudentPortalPage = () => {
             </Card>
           </TabsContent>
         </Tabs>
+      </div>
       </div>
     </div>
   );
