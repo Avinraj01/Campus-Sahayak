@@ -17,47 +17,75 @@ import requests
 import bcrypt
 import jwt
 import base64
+from passlib.context import CryptContext
+import re  # Add this import for regex validation
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
+
+# Password hashing context
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # In-memory user store for when database is not available
 IN_MEMORY_USERS = {}
 
 # MongoDB connection
+client = None
+db = None
 try:
     mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017/campus_management')
     client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=1000)  # Short timeout
     # Test connection explicitly
     db = client[os.environ.get('DB_NAME', 'campus_management')]
-    # Run a simple command to test the connection
+    
     import asyncio
     async def test_connection():
         try:
             await client.admin.command('ping')
-            print("MongoDB connection test successful")
+            return True
         except Exception as e:
             print(f"MongoDB connection test failed: {e}")
+            return False
     
     # Run the test connection
     try:
-        asyncio.run(test_connection())
+        connection_success = asyncio.run(test_connection())
+        if connection_success:
+            print("MongoDB connection test successful")
+            print("MongoDB client initialized")
+        else:
+            print("MongoDB connection test failed - using fallback mode")
+            client = None
+            db = None
     except Exception as e:
-        print(f"Error running MongoDB connection test: {e}")
+        print(f"Error running MongoDB connection test: {e} - using fallback mode")
+        client = None
+        db = None
         
-    print("MongoDB client initialized")
 except Exception as e:
     print(f"MongoDB client initialization failed: {e} - using fallback mode")
     client = None
     db = None
 
+# Validate API key format
+def validate_api_key(api_key):
+    if not api_key:
+        return False
+    # OpenRouter API keys typically start with 'sk-or-v1-'
+    pattern = r'^sk-or-v1-[A-Za-z0-9]{32,}$'
+    return re.match(pattern, api_key) is not None
+
 # OpenRouter client setup
 OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY')
+# Check if API key is available and valid
 if not OPENROUTER_API_KEY:
-    print("WARNING: OPENROUTER_API_KEY not found in environment variables!")
-    OPENROUTER_API_KEY = "demo-key"  # fallback
-else:
-    print(f"OpenRouter API Key loaded: {OPENROUTER_API_KEY[:20]}...")
+    raise RuntimeError("Missing OPENROUTER_API_KEY. Please set it in your .env file.")
+    
+if not validate_api_key(OPENROUTER_API_KEY):
+    raise RuntimeError("Invalid OPENROUTER_API_KEY format. Please check your .env file.")
+
+# For debugging, let's print the API key info
+print(f"OpenRouter API Key loaded: {OPENROUTER_API_KEY[:20] if OPENROUTER_API_KEY else 'None'}...")
 
 # DeepSeek client setup (fallback to OpenRouter if DeepSeek key not provided)
 DEEPSEEK_API_KEY = os.environ.get('DEEPSEEK_API_KEY')
@@ -189,10 +217,10 @@ class ChatResponse(BaseModel):
 
 # Helper Functions
 def hash_password(password: str) -> str:
-    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    return pwd_context.hash(password)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
+    return pwd_context.verify(plain_password, hashed_password)
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
@@ -336,6 +364,7 @@ async def search_web_for_scholarships(query: str) -> str:
 async def register(user_data: UserCreate):
     try:
         if db is None:
+            print("Database is None, using in-memory storage")
             # Check if user already exists in memory
             if user_data.email in IN_MEMORY_USERS:
                 raise HTTPException(status_code=400, detail="Email already registered")
@@ -358,6 +387,7 @@ async def register(user_data: UserCreate):
             # Store in memory
             IN_MEMORY_USERS[user_data.email] = user_record
             print(f"User registered in memory: {user_data.email}")
+            print(f"IN_MEMORY_USERS now contains: {list(IN_MEMORY_USERS.keys())}")
             
             access_token = create_access_token(data={"sub": user_id})
             
@@ -377,6 +407,7 @@ async def register(user_data: UserCreate):
             )
         
         try:
+            print("Database is available, attempting to register in database")
             # Check if user already exists
             existing_user = await db.users.find_one({"email": user_data.email})
             if existing_user:
@@ -395,6 +426,7 @@ async def register(user_data: UserCreate):
             
             user_dict = prepare_for_mongo(user_dict)
             await db.users.insert_one(user_dict)
+            print(f"User registered in database: {user_data.email}")
             
             # Create access token
             access_token = create_access_token(data={"sub": user_dict['id']})
@@ -437,7 +469,6 @@ async def register(user_data: UserCreate):
             
             # Store in memory
             IN_MEMORY_USERS[user_data.email] = user_record
-            print(f"User registered in memory (fallback): {user_data.email}")
             
             access_token = create_access_token(data={"sub": user_id})
             
@@ -463,6 +494,7 @@ async def register(user_data: UserCreate):
 @api_router.post("/auth/login", response_model=TokenResponse)
 async def login(user_data: UserLogin):
     try:
+        # Always check in-memory store first when no database or when database fails
         if db is None:
             # Validate credentials from in-memory store
             # First check if identifier is an email
@@ -521,12 +553,52 @@ async def login(user_data: UserLogin):
             
             user = await db.users.find_one(query)
             if not user:
-                # Instead of raising HTTPException, fall back to mock mode
-                raise Exception("User not found - falling back to mock mode")
+                # Check in-memory store as fallback when user not found in database
+                print("User not found in database, checking in-memory store")
+                
+                # First check if identifier is an email
+                user_record = None
+                if "@" in user_data.identifier:
+                    # If identifier is email, look it up directly
+                    user_record = IN_MEMORY_USERS.get(user_data.identifier)
+                else:
+                    # If identifier is not email, search through all users
+                    for email, user in IN_MEMORY_USERS.items():
+                        if (user_data.user_type == "student" and user.get("enrollment_no") == user_data.identifier) or \
+                           (user_data.user_type == "faculty" and user.get("teacher_id") == user_data.identifier) or \
+                           (user.get("email") == user_data.identifier):
+                            user_record = user
+                            break
+                
+                if not user_record:
+                    raise HTTPException(status_code=401, detail="Invalid credentials")
+                
+                if not verify_password(user_data.password, user_record['password']):
+                    raise HTTPException(status_code=401, detail="Invalid credentials")
+                
+                # Check user type matches
+                if user_record['user_type'] != user_data.user_type:
+                    raise HTTPException(status_code=401, detail="Invalid credentials")
+                
+                access_token = create_access_token(data={"sub": user_record['id']})
+                
+                user_response = UserResponse(
+                    id=user_record['id'],
+                    email=user_record['email'],
+                    full_name=user_record['full_name'],
+                    user_type=user_record['user_type'],
+                    enrollment_no=user_record.get('enrollment_no'),
+                    teacher_id=user_record.get('teacher_id')
+                )
+                
+                return TokenResponse(
+                    access_token=access_token,
+                    token_type="bearer",
+                    user=user_response
+                )
             
             if not verify_password(user_data.password, user['password']):
-                # Instead of raising HTTPException, fall back to mock mode  
-                raise Exception("Invalid password - falling back to mock mode")
+                raise HTTPException(status_code=401, detail="Invalid credentials")
             
             # Create access token
             access_token = create_access_token(data={"sub": user['id']})
@@ -992,10 +1064,15 @@ async def openai_test_endpoint():
     """
     try:
         from openai import OpenAI
+        import os
+        from dotenv import load_dotenv
+
+        # Load environment variables from .env file
+        load_dotenv()
 
         client = OpenAI(
           base_url="https://openrouter.ai/api/v1",
-          api_key="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",
+          api_key=os.environ.get("OPENROUTER_API_KEY"),
         )
 
         completion = client.chat.completions.create(
@@ -1262,19 +1339,13 @@ async def api_info():
     }
 
 
-# Get CORS origins from environment variable, fallback to localhost if not set
-CORS_ORIGINS = os.environ.get('CORS_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000')
-allow_origins = [origin.strip() for origin in CORS_ORIGINS.split(',')]
-
-# Add common development origins if not already present
-common_origins = ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:8000']
-for origin in common_origins:
-    if origin not in allow_origins:
-        allow_origins.append(origin)
+# CORS configuration - read from environment variable or use defaults
+CORS_ORIGINS = os.environ.get('CORS_ORIGINS', 'http://localhost:3000,http://localhost:8000')
+origins = [origin.strip() for origin in CORS_ORIGINS.split(',')]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allow_origins,
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
