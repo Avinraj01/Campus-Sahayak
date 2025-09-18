@@ -56,11 +56,11 @@
     "zod": "^3.24.4"
   },
   "scripts": {
-    "start": "craco start",
+    "start": "set PORT=3000 && craco start",
     "build": "craco build",
-    "test": "craco test"
+    "test": "craco test",
+    "vercel-build": "echo 'No build step required for API functions'"
   },
-  "proxy": "http://localhost:8001",
   "browserslist": {
     "production": [
       ">0.2%",

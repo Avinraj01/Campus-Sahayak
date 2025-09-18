@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
+import os
+from dotenv import load_dotenv
 from openai import OpenAI
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Test the new configuration
 client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
-    api_key="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"
+    api_key=os.environ.get("OPENROUTER_API_KEY"),
 )
 
 completion = client.chat.completions.create(

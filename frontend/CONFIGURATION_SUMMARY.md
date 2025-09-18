@@ -9,7 +9,7 @@ This document summarizes the changes made to configure the React frontend to use
 Created a new `.env` file in the `frontend` directory with the following content:
 
 ```
-REACT_APP_BACKEND_URL=https://campus-management-backend-worf.onrender.com/api
+REACT_APP_BACKEND_URL=http://localhost:8000/api
 ```
 
 ### 2. Updated `App.js`
@@ -110,7 +110,7 @@ const API = `${BACKEND_URL}/api`;
 To use a different backend URL, simply update the `REACT_APP_BACKEND_URL` value in the `.env` file:
 
 ```env
-REACT_APP_BACKEND_URL=https://your-backend-url.com/api
+REACT_APP_BACKEND_URL=your-production-api-url-here
 ```
 
 For local development, you might use:

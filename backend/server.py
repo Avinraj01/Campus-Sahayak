@@ -1,7 +1,6 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, UploadFile, File, Form
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import HTMLResponse
-from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
@@ -20,8 +19,20 @@ import base64
 from passlib.context import CryptContext
 import re  # Add this import for regex validation
 
-ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
+# --- load environment variables (do not commit .env) ---
+import os
+from dotenv import load_dotenv
+
+load_dotenv()  # load local .env during development
+
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017/mydb")
+JWT_SECRET = os.getenv("JWT_SECRET", "change-me-in-prod")
+
+import logging
+if not OPENROUTER_API_KEY:
+    logging.warning("OPENROUTER_API_KEY is not set. AI features will fail until you set OPENROUTER_API_KEY in environment or in backend/.env (local dev).")
+# --- end env load ---
 
 # Password hashing context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -76,14 +87,6 @@ def validate_api_key(api_key):
     return re.match(pattern, api_key) is not None
 
 # OpenRouter client setup
-OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY')
-# Check if API key is available and valid
-if not OPENROUTER_API_KEY:
-    raise RuntimeError("Missing OPENROUTER_API_KEY. Please set it in your .env file.")
-    
-if not validate_api_key(OPENROUTER_API_KEY):
-    raise RuntimeError("Invalid OPENROUTER_API_KEY format. Please check your .env file.")
-
 # For debugging, let's print the API key info
 print(f"OpenRouter API Key loaded: {OPENROUTER_API_KEY[:20] if OPENROUTER_API_KEY else 'None'}...")
 
@@ -99,7 +102,7 @@ else:
     print("DeepSeek API Key not found or invalid, using OpenRouter as fallback")
     openrouter_client = OpenAI(
         base_url="https://openrouter.ai/api/v1",
-        api_key=OPENROUTER_API_KEY
+        api_key=OPENROUTER_API_KEY or ""
     )
 
 # JWT Configuration
@@ -1340,8 +1343,16 @@ async def api_info():
 
 
 # CORS configuration - read from environment variable or use defaults
-CORS_ORIGINS = os.environ.get('CORS_ORIGINS', 'http://localhost:3000,http://localhost:8000')
-origins = [origin.strip() for origin in CORS_ORIGINS.split(',')]
+CORS_ORIGINS = os.environ.get('CORS_ORIGINS', 'http://localhost:3000')
+# Handle both single origin and multiple origins
+if ',' in CORS_ORIGINS:
+    origins = [origin.strip() for origin in CORS_ORIGINS.split(',')]
+else:
+    origins = [CORS_ORIGINS.strip()]
+
+# Ensure localhost:3000 is always included for development
+if 'http://localhost:3000' not in origins:
+    origins.append('http://localhost:3000')
 
 app.add_middleware(
     CORSMiddleware,

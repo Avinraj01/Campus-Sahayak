@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, createContext, useContext } from "react";
 import "./App.css";
 import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import { api } from "./utils/api";
 import { Button } from "./components/ui/button";
 import { Input } from "./components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "./components/ui/card";
@@ -25,8 +25,10 @@ import NoticesPage from "./components/NoticesPage";
 import ContactPage from "./components/ContactPage";
 import FormsPage from "./components/FormsPage";
 
+// Import test files
 import { testApiConnection } from './test-api';
 import './test-routing'; // Import our routing test
+import './api-test'; // Import our API test
 
 // Utility function to remove any Emergent badges
 const removeEmergentBadges = () => {
@@ -89,8 +91,6 @@ const observeEmergentBadges = () => {
 };
 
 // The REACT_APP_BACKEND_URL already includes /api
-// Use environment variable for API URL, fallback to relative URL for proxy
-const API = process.env.REACT_APP_API_URL || '/api';
 
 const LANGUAGES = {
   en: "English",
@@ -109,7 +109,7 @@ const useAuth = () => useContext(AuthContext);
 const testLogin = async () => {
   try {
     console.log('Testing login functionality...');
-    const response = await axios.post(`${API}/auth/login`, {
+    const response = await api.post("/auth/login", {
       identifier: 'test3@example.com',
       password: 'password123',
       user_type: 'student'
@@ -123,7 +123,7 @@ const testLogin = async () => {
 // Auth Provider Component
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('token'));
+  const [token, setToken] = useState(localStorage.getItem('token') || sessionStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -132,11 +132,11 @@ const AuthProvider = ({ children }) => {
     
     if (token) {
       // Set default auth header
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       
       // Get user info from token (you might want to decode JWT)
-      const userData = localStorage.getItem('user');
-      console.log('User data from localStorage:', userData);
+      const userData = localStorage.getItem('user') || sessionStorage.getItem('user');
+      console.log('User data from storage:', userData);
       
       if (userData) {
         try {
@@ -148,6 +148,8 @@ const AuthProvider = ({ children }) => {
           // Clear invalid data
           localStorage.removeItem('user');
           localStorage.removeItem('token');
+          sessionStorage.removeItem('user');
+          sessionStorage.removeItem('token');
         }
       }
     }
@@ -162,15 +164,24 @@ const AuthProvider = ({ children }) => {
     testLogin();
   }, [token]);
 
-  const login = (userData, accessToken) => {
+  const login = (userData, accessToken, rememberUser = false) => {
     console.log('Logging in user:', userData);
     console.log('Access token:', accessToken);
+    console.log('Remember user:', rememberUser);
     
     setUser(userData);
     setToken(accessToken);
-    localStorage.setItem('token', accessToken);
-    localStorage.setItem('user', JSON.stringify(userData));
-    axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+    
+    // Store in localStorage if "Remember Me" is checked, otherwise in sessionStorage
+    if (rememberUser) {
+      localStorage.setItem('token', accessToken);
+      localStorage.setItem('user', JSON.stringify(userData));
+    } else {
+      sessionStorage.setItem('token', accessToken);
+      sessionStorage.setItem('user', JSON.stringify(userData));
+    }
+    
+    api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
     
     console.log('Login completed, user state updated:', userData);
   };
@@ -181,7 +192,9 @@ const AuthProvider = ({ children }) => {
     setToken(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    delete axios.defaults.headers.common['Authorization'];
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
+    delete api.defaults.headers.common['Authorization'];
     console.log('Logout completed');
   };
 
@@ -224,7 +237,9 @@ const LoginPage = () => {
     user_type: 'student'
   });
   const [isLogin, setIsLogin] = useState(true);
-  const [showPassword, setShowPassword] = useState(false);
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showSignupPassword, setShowSignupPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [signupData, setSignupData] = useState({
     email: '',
@@ -237,22 +252,89 @@ const LoginPage = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  // Clear any existing auth data when component mounts
+  useEffect(() => {
+    // Clear localStorage and sessionStorage auth data
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
+    
+    // Clear any existing axios default headers
+    delete api.defaults.headers.common['Authorization'];
+    
+    // Test API connection
+    testApiConnection();
+    
+    console.log('Cleared existing auth data');
+  }, []);
+
+  // Clear form fields when switching tabs
+  useEffect(() => {
+    if (isLogin) {
+      // Clear signup form when switching to login
+      setSignupData({
+        email: '',
+        password: '',
+        user_type: 'student',
+        full_name: '',
+        phone: ''
+      });
+      setShowSignupPassword(false);
+    } else {
+      // Clear login form when switching to signup
+      setFormData({
+        identifier: '',
+        password: '',
+        user_type: 'student'
+      });
+      setShowLoginPassword(false);
+    }
+  }, [isLogin]);
+
+  // Test API connection function
+  const testApiConnection = async () => {
+    try {
+      console.log('Testing API connection...');
+      
+      // Test the root endpoint
+      const rootResponse = await api.get("/api-info");
+      console.log('API connection test successful:', rootResponse.data);
+    } catch (error) {
+      console.error('API connection test failed:', error);
+      console.error('Error response:', error.response);
+    }
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     
+    // Basic validation
+    if (!formData.identifier) {
+      alert('Please enter your email/ID');
+      setLoading(false);
+      return;
+    }
+    
+    if (!formData.password) {
+      alert('Please enter your password');
+      setLoading(false);
+      return;
+    }
+    
     try {
       console.log('Attempting login with:', formData);
-      console.log('API URL:', `${API}/auth/login`);
+      console.log('API URL:', `/auth/login`);
       
-      const response = await axios.post(`${API}/auth/login`, formData);
+      const response = await api.post("/auth/login", formData);
       console.log('Login successful:', response.data);
       
       // Log the response data before calling login
       console.log('Response user data:', response.data.user);
       console.log('Response access token:', response.data.access_token);
       
-      login(response.data.user, response.data.access_token);
+      login(response.data.user, response.data.access_token, rememberMe);
       
       // Log before navigation
       console.log('Navigating to dashboard');
@@ -261,12 +343,43 @@ const LoginPage = () => {
       console.error('Login error:', error);
       console.error('Error response:', error.response);
       
-      const errorMessage = error.response?.data?.detail || 
-                        error.response?.data?.message || 
-                        error.message || 
-                        'Login failed - please check your credentials';
+      let errorMessage = 'Login failed - please check your credentials';
       
-      alert(errorMessage);
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        if (error.response.status === 401) {
+          errorMessage = 'Invalid credentials. Please check your email/ID and password.';
+        } else if (error.response.status === 400) {
+          errorMessage = 'Bad request. Please check your input.';
+        } else if (error.response.data && error.response.data.detail) {
+          errorMessage = error.response.data.detail;
+        } else if (error.response.data && error.response.data.error) {
+          errorMessage = error.response.data.error;
+        } else {
+          errorMessage = `Login failed with status ${error.response.status}`;
+        }
+      } else if (error.request) {
+        // The request was made but no response was received
+        errorMessage = 'Network error. Please check your connection.';
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        errorMessage = error.message || 'An unknown error occurred';
+      }
+      
+      // Provide more specific guidance for "Invalid credentials" error
+      if (errorMessage.includes('Invalid credentials')) {
+        alert(`${errorMessage}
+
+Please check:
+1. Your email/ID is correct
+2. Your password is correct
+3. Your user type matches what you selected during registration
+4. If you're a student, try using your enrollment number instead of email
+5. If you're faculty, try using your teacher ID instead of email`);
+      } else {
+        alert(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
@@ -274,13 +387,48 @@ const LoginPage = () => {
 
   const handleSignup = async (e) => {
     e.preventDefault();
+    
+    // Validate that all required fields are filled
+    if (!signupData.email) {
+      alert('Please enter your email');
+      return;
+    }
+    
+    if (!signupData.password) {
+      alert('Please enter a password');
+      return;
+    }
+    
+    if (!signupData.full_name) {
+      alert('Please enter your full name');
+      return;
+    }
+    
+    if (!signupData.user_type) {
+      alert('Please select a user type');
+      return;
+    }
+    
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(signupData.email)) {
+      alert('Please enter a valid email address');
+      return;
+    }
+    
+    // Password strength validation
+    if (signupData.password.length < 6) {
+      alert('Password must be at least 6 characters long');
+      return;
+    }
+    
     setLoading(true);
     
     try {
       console.log('Attempting registration with data:', signupData);
-      console.log('API URL:', `${API}/auth/register`);
+      console.log('API URL:', `/auth/register`);
       
-      const response = await axios.post(`${API}/auth/register`, signupData);
+      const response = await api.post("/auth/register", signupData);
       console.log('Registration successful:', response.data);
       
       // Log the response data before calling login
@@ -296,12 +444,45 @@ const LoginPage = () => {
       console.error('Registration error:', error);
       console.error('Error response:', error.response);
       
-      const errorMessage = error.response?.data?.detail || 
-                        error.response?.data?.message || 
-                        error.message || 
-                        'Registration failed - please check your connection';
+      let errorMessage = 'Registration failed - please check your connection';
       
-      alert(errorMessage);
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        if (error.response.status === 400) {
+          if (error.response.data && error.response.data.detail) {
+            errorMessage = error.response.data.detail;
+          } else {
+            errorMessage = 'Bad request. Please check your input.';
+          }
+        } else if (error.response.status === 409) {
+          errorMessage = 'Email already registered. Please use a different email or try logging in.';
+        } else if (error.response.data && error.response.data.detail) {
+          errorMessage = error.response.data.detail;
+        } else if (error.response.data && error.response.data.error) {
+          errorMessage = error.response.data.error;
+        } else {
+          errorMessage = `Registration failed with status ${error.response.status}`;
+        }
+      } else if (error.request) {
+        // The request was made but no response was received
+        errorMessage = 'Network error. Please check your connection.';
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        errorMessage = error.message || 'An unknown error occurred';
+      }
+      
+      // Provide more specific guidance for "Email already registered" error
+      if (errorMessage.includes('Email already registered') || errorMessage.includes('already registered')) {
+        alert(`${errorMessage}
+
+Please try:
+1. Using a different email address
+2. If you already have an account, go to the Login tab
+3. Check if you've used this email before`);
+      } else {
+        alert(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
@@ -334,6 +515,12 @@ const LoginPage = () => {
             
             <TabsContent value="login">
               <form onSubmit={handleLogin} className="space-y-4">
+                <div className="bg-blue-50 p-3 rounded-lg mb-4">
+                  <p className="text-sm text-blue-800">
+                    <strong>Tip:</strong> Make sure your user type matches what you selected during registration. If you're still having issues, try using your enrollment number (for students) or teacher ID (for faculty) instead of your email.
+                  </p>
+                </div>
+                
                 <div>
                   <Label>User Type</Label>
                   <Select value={formData.user_type} onValueChange={(value) => setFormData({...formData, user_type: value})}>
@@ -367,7 +554,7 @@ const LoginPage = () => {
                   <Label>Password</Label>
                   <div className="relative">
                     <Input
-                      type={showPassword ? "text" : "password"}
+                      type={showLoginPassword ? "text" : "password"}
                       value={formData.password}
                       onChange={(e) => setFormData({...formData, password: e.target.value})}
                       placeholder="Enter password"
@@ -378,13 +565,24 @@ const LoginPage = () => {
                       variant="ghost"
                       size="sm"
                       className="absolute right-0 top-0 h-full px-3"
-                      onClick={() => setShowPassword(!showPassword)}
+                      onClick={() => setShowLoginPassword(!showLoginPassword)}
                     >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      {showLoginPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
                   </div>
                 </div>
                 
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="rememberMe"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <Label htmlFor="rememberMe">Remember me</Label>
+                </div>
+
                 <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700" disabled={loading}>
                   {loading ? 'Logging in...' : 'Login'}
                 </Button>
@@ -393,6 +591,12 @@ const LoginPage = () => {
             
             <TabsContent value="signup">
               <form onSubmit={handleSignup} className="space-y-4">
+                <div className="bg-blue-50 p-3 rounded-lg mb-4">
+                  <p className="text-sm text-blue-800">
+                    <strong>Tip:</strong> If you get an "Email already registered" error, try using a different email address or go to the Login tab if you already have an account.
+                  </p>
+                </div>
+                
                 <div>
                   <Label>User Type</Label>
                   <Select value={signupData.user_type} onValueChange={(value) => setSignupData({...signupData, user_type: value})}>
@@ -443,7 +647,7 @@ const LoginPage = () => {
                   <Label>Password</Label>
                   <div className="relative">
                     <Input
-                      type={showPassword ? "text" : "password"}
+                      type={showSignupPassword ? "text" : "password"}
                       value={signupData.password}
                       onChange={(e) => setSignupData({...signupData, password: e.target.value})}
                       placeholder="Create password"
@@ -454,9 +658,9 @@ const LoginPage = () => {
                       variant="ghost"
                       size="sm"
                       className="absolute right-0 top-0 h-full px-3"
-                      onClick={() => setShowPassword(!showPassword)}
+                      onClick={() => setShowSignupPassword(!showSignupPassword)}
                     >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      {showSignupPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
                   </div>
                 </div>
@@ -642,7 +846,7 @@ const Dashboard = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post(`${API}/chat`, {
+      const response = await api.post("/chat", {
         message: inputMessage,
         session_id: sessionId,
         language: selectedLanguage
@@ -1096,8 +1300,12 @@ function App() {
                 <FormsPage />
               </ProtectedRoute>
             } />
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/" element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

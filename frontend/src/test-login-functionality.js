@@ -1,17 +1,15 @@
-// Test login and signup functionality
-import axios from 'axios';
-
-// The REACT_APP_BACKEND_URL already includes /api
-const API_BASE = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000/api';
+import { api } from './utils/api';
 
 console.log('Testing login and signup functionality...');
+// Define API_BASE from the api instance baseURL
+const API_BASE = api.defaults.baseURL;
 console.log('API Base URL:', API_BASE);
 
 // Function to test login
 export async function testLogin() {
   try {
     console.log('\n--- Testing Login Endpoint ---');
-    const response = await axios.post(`${API_BASE}/auth/login`, {
+    const response = await api.post("/auth/login", {
       identifier: 'test@example.com',
       password: 'wrongpassword',
       user_type: 'student'
@@ -28,7 +26,7 @@ export async function testLogin() {
 export async function testSignup() {
   try {
     console.log('\n--- Testing Signup Endpoint ---');
-    const response = await axios.post(`${API_BASE}/auth/register`, {
+    const response = await api.post("/auth/register", {
       email: 'testuser@example.com',
       password: 'testpassword',
       user_type: 'student',
@@ -46,7 +44,7 @@ export async function testSignup() {
 export async function testApiConnectivity() {
   try {
     console.log('\n--- Testing API Connectivity ---');
-    const response = await axios.get(`${API_BASE.replace('/api', '')}/api-info`);
+    const response = await api.get("/api-info");
     console.log('API Info response:', response.data);
     return response.data;
   } catch (error) {

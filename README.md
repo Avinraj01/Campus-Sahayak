@@ -62,9 +62,9 @@ campus-management/
    cd frontend
    ```
 
-2. Install dependencies:
+2. Install dependencies (use --legacy-peer-deps to avoid conflicts):
    ```bash
-   npm install
+   npm install --legacy-peer-deps
    # or
    yarn install
    ```
@@ -76,17 +76,23 @@ campus-management/
 
 4. Run the frontend development server:
    ```bash
-   npm start
-   # or
-   yarn start
+   npx craco start
    ```
    
    The frontend will be available at http://localhost:3000
 
+## Quick Start Scripts
+
+For easier development, you can use the provided PowerShell scripts:
+
+- `start_backend.ps1` - Starts only the backend server
+- `start_frontend.ps1` - Starts only the frontend server
+- `start_fresh.ps1` - Attempts to start both servers with a clean state
+
 ## Environment Variables
 
 ### Backend (.env)
-- `CORS_ORIGINS`: Comma-separated list of allowed origins (default: http://localhost:3000,http://localhost:8000)
+- `CORS_ORIGINS`: Comma-separated list of allowed origins (default: http://localhost:3000)
 - `MONGO_URL`: MongoDB connection string
 - `DB_NAME`: Database name
 - `JWT_SECRET`: Secret key for JWT token generation
@@ -123,7 +129,15 @@ The backend API is available at `/api` prefix:
 1. **CORS Errors**: Make sure `CORS_ORIGINS` in the backend `.env` includes your frontend URL
 2. **MongoDB Connection**: Verify MongoDB is running and the connection string is correct
 3. **API Key Issues**: Ensure your OpenRouter API key is valid and has credits
+4. **Dependency Conflicts**: Use `npm install --legacy-peer-deps` to avoid React version conflicts
 
 ## Deployment
 
 For deployment instructions, see [DEPLOYMENT.md](backend/DEPLOYMENT.md).
+
+## Verification
+
+Once both servers are running:
+- Backend: http://localhost:8000
+- Frontend: http://localhost:3000
+- API Docs: http://localhost:8000/docs
