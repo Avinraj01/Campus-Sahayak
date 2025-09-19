@@ -1084,7 +1084,7 @@ async def openai_test_endpoint():
             "error": str(e)
         }
 
-# Include the router in the main app
+# Include the API router
 app.include_router(api_router)
 
 # Add a root endpoint for API documentation
