@@ -1,7 +1,8 @@
 import axios from "axios";
 
 // Use the environment variable or fallback to localhost for development
-const BASE_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:8000/api";
+// For Vercel deployment, we use the proxy path /api which will be rewritten to the actual backend
+const BASE_URL = process.env.REACT_APP_BACKEND_URL || "/api";
 
 console.log("API Base URL:", BASE_URL);
 
