@@ -49,29 +49,7 @@ try:
     # Test connection explicitly
     db = client[os.environ.get('DB_NAME', 'campus_management')]
     
-    import asyncio
-    async def test_connection():
-        try:
-            await client.admin.command('ping')
-            return True
-        except Exception as e:
-            print(f"MongoDB connection test failed: {e}")
-            return False
-    
-    # Run the test connection
-    try:
-        connection_success = asyncio.run(test_connection())
-        if connection_success:
-            print("MongoDB connection test successful")
-            print("MongoDB client initialized")
-        else:
-            print("MongoDB connection test failed - using fallback mode")
-            client = None
-            db = None
-    except Exception as e:
-        print(f"Error running MongoDB connection test: {e} - using fallback mode")
-        client = None
-        db = None
+    print("MongoDB client initialized (connection test deferred to runtime)")
         
 except Exception as e:
     print(f"MongoDB client initialization failed: {e} - using fallback mode")
