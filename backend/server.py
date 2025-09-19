@@ -1343,7 +1343,8 @@ async def api_info():
 
 
 # CORS configuration - read from environment variable or use defaults
-CORS_ORIGINS = os.environ.get('CORS_ORIGINS', 'http://localhost:3000')
+CORS_ORIGINS = os.environ.get('CORS_ORIGINS', 'http://localhost:3000,https://campus-management-system-ten.vercel.app')
+
 # Handle both single origin and multiple origins
 if ',' in CORS_ORIGINS:
     origins = [origin.strip() for origin in CORS_ORIGINS.split(',')]
@@ -1353,6 +1354,10 @@ else:
 # Ensure localhost:3000 is always included for development
 if 'http://localhost:3000' not in origins:
     origins.append('http://localhost:3000')
+
+# Ensure Vercel deployment is included
+if 'https://campus-management-system-ten.vercel.app' not in origins:
+    origins.append('https://campus-management-system-ten.vercel.app')
 
 app.add_middleware(
     CORSMiddleware,

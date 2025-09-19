@@ -296,6 +296,7 @@ const LoginPage = () => {
   const testApiConnection = async () => {
     try {
       console.log('Testing API connection...');
+      console.log('API Base URL:', api.defaults.baseURL);
       
       // Test the root endpoint
       const rootResponse = await api.get("/api-info");
@@ -303,6 +304,7 @@ const LoginPage = () => {
     } catch (error) {
       console.error('API connection test failed:', error);
       console.error('Error response:', error.response);
+      console.error('API Base URL was:', api.defaults.baseURL);
     }
   };
 
@@ -326,6 +328,7 @@ const LoginPage = () => {
     try {
       console.log('Attempting login with:', formData);
       console.log('API URL:', `/auth/login`);
+      console.log('API Base URL:', api.defaults.baseURL);
       
       const response = await api.post("/auth/login", formData);
       console.log('Login successful:', response.data);
@@ -342,6 +345,7 @@ const LoginPage = () => {
     } catch (error) {
       console.error('Login error:', error);
       console.error('Error response:', error.response);
+      console.error('API Base URL was:', api.defaults.baseURL);
       
       let errorMessage = 'Login failed - please check your credentials';
       
@@ -361,7 +365,7 @@ const LoginPage = () => {
         }
       } else if (error.request) {
         // The request was made but no response was received
-        errorMessage = 'Network error. Please check your connection.';
+        errorMessage = 'Network error. Please check your connection and make sure the backend server is running.';
       } else {
         // Something happened in setting up the request that triggered an Error
         errorMessage = error.message || 'An unknown error occurred';
@@ -376,7 +380,8 @@ Please check:
 2. Your password is correct
 3. Your user type matches what you selected during registration
 4. If you're a student, try using your enrollment number instead of email
-5. If you're faculty, try using your teacher ID instead of email`);
+5. If you're faculty, try using your teacher ID instead of email
+6. Make sure the backend server is running and accessible`);
       } else {
         alert(errorMessage);
       }

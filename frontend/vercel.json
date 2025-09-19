@@ -1,3 +1,6 @@
 {
-  "outputDirectory": "build"
+  "outputDirectory": "build",
+  "env": {
+    "REACT_APP_BACKEND_URL": "https://campus-backend-pc26.onrender.com/api"
+  }
 }
