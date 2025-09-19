@@ -26,6 +26,8 @@ ENV/
 .env
 .env.local
 .env.production
+.env.*
+!*.example
 
 # IDE and editors
 .idea/
@@ -174,3 +176,11 @@ dmypy.json
 
 # Render
 # render.yaml  # Commented out so render.yaml can be committed
+
+# Additional secret files
+*.key
+*.pem
+*.crt
+*.cert
+secrets.json
+credentials.json

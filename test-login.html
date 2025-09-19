@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Test</title>
+</head>
+<body>
+    <h1>Login Test</h1>
+    <form id="loginForm">
+        <div>
+            <label for="identifier">Email/ID:</label>
+            <input type="text" id="identifier" value="test@example.com" required>
+        </div>
+        <div>
+            <label for="password">Password:</label>
+            <input type="password" id="password" value="wrongpassword" required>
+        </div>
+        <div>
+            <label for="userType">User Type:</label>
+            <select id="userType">
+                <option value="student">Student</option>
+                <option value="faculty">Faculty</option>
+                <option value="general">General</option>
+            </select>
+        </div>
+        <button type="submit">Test Login</button>
+    </form>
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing login...';
+            
+            const formData = {
+                identifier: document.getElementById('identifier').value,
+                password: document.getElementById('password').value,
+                user_type: document.getElementById('userType').value
+            };
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <h2>Login Successful!</h2>
+                        <p>User: ${data.user.full_name}</p>
+                        <p>Token: ${data.access_token.substring(0, 20)}...</p>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <h2>Login Failed</h2>
+                        <p>Status: ${response.status}</p>
+                        <p>Error: ${data.detail || data.error || 'Unknown error'}</p>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <h2>Login Test Failed</h2>
+                    <p>Error: ${error.message}</p>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

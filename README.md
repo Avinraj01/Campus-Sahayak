@@ -1,24 +1,29 @@
 # Campus Management System
 
-A comprehensive campus management system with AI-powered multilingual chat assistance.
+A comprehensive campus management system with AI-powered multilingual chatbot assistance.
 
 ## Project Structure
 
 ```
-campus-management/
-├── backend/          # FastAPI backend
-├── frontend/         # React frontend
-└── README.md         # This file
+.
+├── backend/                 # FastAPI backend
+│   ├── server.py           # Main application file
+│   ├── requirements.txt    # Python dependencies
+│   ├── .env.example        # Environment variables template
+│   ├── .gitignore          # Git ignore rules
+│   └── render.yaml         # Render deployment configuration
+├── frontend/               # React frontend
+│   ├── src/                # Source code
+│   ├── public/             # Static assets
+│   ├── package.json        # Node.js dependencies
+│   ├── .env.example        # Environment variables template
+│   ├── .gitignore          # Git ignore rules
+│   └── vercel.json         # Vercel deployment configuration
+├── .gitignore              # Root git ignore
+└── README.md              # This file
 ```
 
-## Prerequisites
-
-- Python 3.8+
-- Node.js 14+
-- MongoDB (local or cloud instance)
-- npm or yarn
-
-## Local Development Setup
+## Local Development
 
 ### Backend Setup
 
@@ -33,27 +38,17 @@ campus-management/
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
-3. Install Python dependencies:
+3. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
 
-4. Create a `.env` file based on `.env.example`:
-   ```bash
-   cp .env.example .env
-   ```
+4. Create a `.env` file based on `.env.example` and fill in your values
 
-5. Update the `.env` file with your configuration:
-   - Set your MongoDB connection string
-   - Add your OpenRouter API key (get one at https://openrouter.ai/)
-   - Update CORS origins if needed
-
-6. Run the backend server:
+5. Run the development server:
    ```bash
-   python server.py
+   python -m uvicorn server:app --host 0.0.0.0 --port 8000 --reload
    ```
-   
-   The backend will be available at http://localhost:8000
 
 ### Frontend Setup
 
@@ -62,82 +57,83 @@ campus-management/
    cd frontend
    ```
 
-2. Install dependencies (use --legacy-peer-deps to avoid conflicts):
+2. Install dependencies:
    ```bash
-   npm install --legacy-peer-deps
-   # or
-   yarn install
+   npm install
    ```
 
-3. Create a `.env` file based on `.env.example`:
+3. Create a `.env` file based on `.env.example` and fill in your values
+
+4. Run the development server:
    ```bash
-   cp .env.example .env
+   npm start
    ```
-
-4. Run the frontend development server:
-   ```bash
-   npx craco start
-   ```
-   
-   The frontend will be available at http://localhost:3000
-
-## Quick Start Scripts
-
-For easier development, you can use the provided PowerShell scripts:
-
-- `start_backend.ps1` - Starts only the backend server
-- `start_frontend.ps1` - Starts only the frontend server
-- `start_fresh.ps1` - Attempts to start both servers with a clean state
-
-## Environment Variables
-
-### Backend (.env)
-- `CORS_ORIGINS`: Comma-separated list of allowed origins (default: http://localhost:3000)
-- `MONGO_URL`: MongoDB connection string
-- `DB_NAME`: Database name
-- `JWT_SECRET`: Secret key for JWT token generation
-- `OPENROUTER_API_KEY`: API key for OpenRouter AI services
-
-### Frontend (.env)
-- `REACT_APP_BACKEND_URL`: Base URL for backend API (default: http://localhost:8000/api)
-
-## API Endpoints
-
-The backend API is available at `/api` prefix:
-
-- `POST /api/auth/login` - User login
-- `POST /api/auth/register` - User registration
-- `POST /api/chat` - AI chat endpoint
-- `POST /api/complaints` - Submit complaints
-- `GET /api/complaints` - Get user complaints
-- `POST /api/forms` - Submit forms
-- `GET /api/forms` - Get user forms
-- `GET /api/notices` - Get campus notices
-
-## Troubleshooting
-
-### "Not Found" Errors on Login/Signup
-
-1. Ensure the backend server is running on port 8000
-2. Check that CORS is properly configured in the backend `.env` file
-3. Verify the frontend `.env` file has the correct `REACT_APP_BACKEND_URL`
-4. Check browser console for network errors
-5. Make sure MongoDB is running and accessible
-
-### Common Issues
-
-1. **CORS Errors**: Make sure `CORS_ORIGINS` in the backend `.env` includes your frontend URL
-2. **MongoDB Connection**: Verify MongoDB is running and the connection string is correct
-3. **API Key Issues**: Ensure your OpenRouter API key is valid and has credits
-4. **Dependency Conflicts**: Use `npm install --legacy-peer-deps` to avoid React version conflicts
 
 ## Deployment
 
-For deployment instructions, see [DEPLOYMENT.md](backend/DEPLOYMENT.md).
+See [DEPLOYMENT_GUIDE.md](file:///C:/Users/AVIN%20RAJ/Desktop/app_backup/DEPLOYMENT_GUIDE.md) for detailed deployment instructions.
 
-## Verification
+### Backend (Render)
+- Runtime: Python
+- Build Command: `pip install -r requirements.txt`
+- Start Command: `uvicorn server:app --host 0.0.0.0 --port $PORT`
 
-Once both servers are running:
-- Backend: http://localhost:8000
-- Frontend: http://localhost:3000
-- API Docs: http://localhost:8000/docs
+### Frontend (Vercel)
+- Framework: Create React App
+- Build Command: `npm run build`
+- Output Directory: `build`
+
+## Environment Variables
+
+### Backend
+Create a `.env` file in the `backend/` directory with the following variables:
+- `CORS_ORIGINS`: Comma-separated list of allowed origins
+- `MONGO_URL`: MongoDB connection string
+- `DB_NAME`: Database name
+- `JWT_SECRET`: Secret key for JWT tokens
+- `OPENROUTER_API_KEY`: OpenRouter API key for AI features
+
+### Frontend
+Create a `.env` file in the `frontend/` directory with the following variables:
+- `REACT_APP_BACKEND_URL`: Backend API URL (use `/api` for production with proxy)
+
+## Security
+
+- Never commit `.env` files to version control
+- Use strong, random values for secrets
+- Regularly rotate API keys
+- Keep dependencies up to date
+
+## Features
+
+- Multilingual AI chatbot (English, Hindi, Gujarati, Telugu, Rajasthani, Urdu)
+- User authentication (students, faculty, general users)
+- Complaint management system
+- Form submission system
+- Campus notices
+- Academic calendar
+- Responsive design for all devices
+
+## API Endpoints
+
+### Authentication
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+
+### Chat
+- `POST /api/chat` - AI chat interface
+
+### Complaints
+- `POST /api/complaints` - Submit a complaint
+- `GET /api/complaints` - Get user's complaints
+
+### Forms
+- `POST /api/forms` - Submit a form
+- `GET /api/forms` - Get user's forms
+
+### Notices
+- `GET /api/notices` - Get campus notices
+
+## Support
+
+For issues or questions, please contact the development team.

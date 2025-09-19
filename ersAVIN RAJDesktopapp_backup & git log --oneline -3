@@ -1,0 +1,5 @@
+[33mb9b8040[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/fix-deployment[m[33m, [m[1;31morigin/final-deployment-fixes[m[33m, [m[1;31morigin/deployment-fixes[m[33m, [m[1;32mfinal-deployment-fixes[m[33m)[m Enhanced CORS configuration for production deployment and added deployment guides
+[33m2778ecc[m[33m ([m[1;31morigin/deploy/render-vercel-ready[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mdeploy/render-vercel-ready[m[33m)[m Fix MongoDB connection test issue by removing asyncio.run() call
+[33m648d9a3[m Fix API configuration to use Vercel proxy and clean up vercel.json
+[33ma1327da[m Configured vercel.json with backend API and cleaned .env
+[33m8b7afb3[m fix: add render.yaml for proper backend deployment and update CORS configuration

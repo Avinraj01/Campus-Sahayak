@@ -26,7 +26,8 @@ from dotenv import load_dotenv
 load_dotenv()  # load local .env during development
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017/mydb")
+# Updated to use MONGO_URI instead of MONGO_URL
+MONGO_URI = os.getenv("MONGO_URI")
 JWT_SECRET = os.getenv("JWT_SECRET", "change-me-in-prod")
 
 import logging
@@ -43,6 +44,13 @@ IN_MEMORY_USERS = {}
 # MongoDB connection - Initialize without connecting immediately
 client = None
 db = None
+
+# Add the MongoDB connection as requested
+from motor.motor_asyncio import AsyncIOMotorClient
+import os
+
+client = AsyncIOMotorClient(os.getenv("MONGO_URI"))
+db = client["campusDB"]
 
 # Validate API key format
 def validate_api_key(api_key):
@@ -1031,71 +1039,19 @@ async def get_chat_history(session_id: str, current_user: User = Depends(get_cur
 @app.get("/healthz")
 async def health_check():
     """Health check endpoint for deployment platforms like Render"""
+    # This endpoint should be as lightweight as possible
+    # Don't check database connection here to avoid blocking
     return {
         "status": "healthy",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "service": "campus-management-backend"
     }
 
-# Add a simple root endpoint
-@app.get("/")
-async def root():
-    """Simple root endpoint"""
-    return {"message": "Campus Management System Backend is running", "status": "healthy"}
-
-# Add the specific OpenAI endpoint you provided
-@api_router.post("/openai-test")
-async def openai_test_endpoint():
-    """
-    Test endpoint that uses the exact OpenAI client code you provided
-    """
-    try:
-        from openai import OpenAI
-        import os
-        from dotenv import load_dotenv
-
-        # Load environment variables from .env file
-        load_dotenv()
-
-        client = OpenAI(
-          base_url="https://openrouter.ai/api/v1",
-          api_key=os.environ.get("OPENROUTER_API_KEY"),
-        )
-
-        completion = client.chat.completions.create(
-          extra_headers={
-            "HTTP-Referer": "https://campus-lingua.preview.emergentagent.com", # Optional. Site URL for rankings on openrouter.ai.
-            "X-Title": "Campus Management System", # Optional. Site title for rankings on openrouter.ai.
-          },
-          model="openai/gpt-4o",
-          messages=[
-            {
-              "role": "user",
-              "content": "What is the meaning of life?"
-            }
-          ],
-          max_tokens=500  # Reduce token limit to stay within credit limits
-        )
-
-        response_content = completion.choices[0].message.content
-        
-        return {
-            "status": "success",
-            "response": response_content,
-            "model": "openai/gpt-4o"
-        }
-    except Exception as e:
-        return {
-            "status": "error",
-            "error": str(e)
-        }
-
-# Include the API router
-app.include_router(api_router)
-
-# Add a root endpoint for API documentation
+# Add a simple root endpoint that returns HTML for browser access and JSON for programmatic access
 @app.get("/", response_class=HTMLResponse)
-async def main_root():
+async def root():
+    """Root endpoint that serves HTML for browser access and JSON for programmatic access"""
+    # Check if the request is from a browser (accept HTML) or from an API client
     html_content = """
     <!DOCTYPE html>
     <html lang="en">
@@ -1335,6 +1291,17 @@ if ',' in CORS_ORIGINS:
 else:
     origins = [CORS_ORIGINS.strip()]
 
+# Add common development origins if not already present
+common_origins = [
+    'http://localhost:3000',
+    'http://localhost:8000',
+    'https://campus-management-system-ten.vercel.app'
+]
+
+for origin in common_origins:
+    if origin not in origins:
+        origins.append(origin)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -1343,20 +1310,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize MongoDB connection on startup
-@app.on_event("startup")
-async def startup_db_client():
-    global client, db
-    try:
-        mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017/campus_management')
-        # Initialize client without connecting immediately
-        client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=5000)
-        db = client[os.environ.get('DB_NAME', 'campus_management')]
-        print("MongoDB client initialized")
-    except Exception as e:
-        print(f"MongoDB client initialization failed: {e}")
-        client = None
-        db = None
+# Remove the old MongoDB connection initialization and keep only the simple connection as requested
 
 @app.on_event("shutdown")
 async def shutdown_db_client():

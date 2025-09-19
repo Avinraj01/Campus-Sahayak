@@ -68,6 +68,8 @@ def check_mongo_connection():
         mongo_url = os.getenv("MONGO_URL", "mongodb://localhost:27017/campus_management")
         print(f"  📍 Connecting to: {mongo_url}")
         
+        # Use synchronous MongoDB client for testing to avoid event loop conflicts
+        from pymongo import MongoClient
         client = MongoClient(mongo_url, serverSelectionTimeoutMS=2000)
         client.admin.command('ping')
         print("  ✅ MongoDB connection successful")

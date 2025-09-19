@@ -1,7 +1,11 @@
 from openai import OpenAI
+import os
 
-# Using the API key you provided directly
-api_key = "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"
+# Using the API key from environment variables
+api_key = os.getenv("OPENROUTER_API_KEY")
+
+if not api_key:
+    raise ValueError("OPENROUTER_API_KEY environment variable not set")
 
 print(f"Using API key: {api_key[:20]}...")
 

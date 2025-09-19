@@ -78,6 +78,8 @@ def test_mongo_connection():
     print(f"  📍 Connecting to: {mongo_url.split('@')[0]}@***")
     
     try:
+        # Use synchronous MongoDB client for testing to avoid event loop conflicts
+        from pymongo import MongoClient
         client = MongoClient(mongo_url, serverSelectionTimeoutMS=5000)
         client.admin.command('ping')
         print("  ✅ MongoDB connection successful")

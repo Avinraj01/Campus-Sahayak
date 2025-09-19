@@ -12,9 +12,11 @@ if __name__ == "__main__":
     
     # Run the app with proper configuration for Render
     uvicorn.run(
-        "server:app",  # Changed from "main:app" to "server:app"
+        "main:app",  # Changed to "main:app" to match render.yaml
         host="0.0.0.0",
         port=port,
         workers=1,  # Use single worker for free tier
-        log_level="info"
+        log_level="info",
+        timeout_keep_alive=5,  # Reduce keep-alive timeout
+        timeout_graceful_shutdown=10  # Add graceful shutdown timeout
     )

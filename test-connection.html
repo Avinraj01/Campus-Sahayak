@@ -4,23 +4,36 @@
     <title>Connection Test</title>
 </head>
 <body>
-    <h1>Connection Test</h1>
-    <button onclick="testConnection()">Test Connection</button>
+    <h1>Connection Test Between Frontend and Backend</h1>
+    <button id="testBtn">Test Connection</button>
     <div id="result"></div>
 
     <script>
-        async function testConnection() {
+        document.getElementById('testBtn').addEventListener('click', async () => {
             const resultDiv = document.getElementById('result');
             resultDiv.innerHTML = 'Testing connection...';
             
             try {
-                const response = await fetch('http://localhost:8000/api-info');
-                const data = await response.json();
-                resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                // Test health endpoint
+                const healthResponse = await fetch('http://localhost:8000/healthz');
+                const healthData = await healthResponse.json();
+                
+                // Test API info endpoint
+                const apiResponse = await fetch('http://localhost:8000/api-info');
+                const apiData = await apiResponse.json();
+                
+                resultDiv.innerHTML = `
+                    <h2>Connection Test Successful!</h2>
+                    <p><strong>Health Check:</strong> ${JSON.stringify(healthData)}</p>
+                    <p><strong>API Info:</strong> ${JSON.stringify(apiData)}</p>
+                `;
             } catch (error) {
-                resultDiv.innerHTML = `Error: ${error.message}`;
+                resultDiv.innerHTML = `
+                    <h2>Connection Test Failed</h2>
+                    <p>Error: ${error.message}</p>
+                `;
             }
-        }
+        });
     </script>
 </body>
 </html>
