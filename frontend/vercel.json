@@ -2,5 +2,30 @@
   "outputDirectory": "build",
   "env": {
     "REACT_APP_BACKEND_URL": "https://campus-backend-pc26.onrender.com/api"
-  }
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "https://campus-management-system-ten.vercel.app"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "X-Requested-With, Content-Type, Authorization"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://campus-management-system-backend.onrender.com/api/:path*"
+    }
+  ]
 }

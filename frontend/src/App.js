@@ -26,7 +26,7 @@ import ContactPage from "./components/ContactPage";
 import FormsPage from "./components/FormsPage";
 
 // Import test files
-import { testApiConnection } from './test-api';
+import { testApiConnection, testLoginEndpoint } from './test-connection';
 import './test-routing'; // Import our routing test
 import './api-test'; // Import our API test
 
@@ -366,6 +366,8 @@ const LoginPage = () => {
       } else if (error.request) {
         // The request was made but no response was received
         errorMessage = 'Network error. Please check your connection and make sure the backend server is running.';
+        console.error('No response received from server. This could be due to CORS issues or server being down.');
+        console.error('Request details:', error.request);
       } else {
         // Something happened in setting up the request that triggered an Error
         errorMessage = error.message || 'An unknown error occurred';

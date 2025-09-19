@@ -1359,6 +1359,10 @@ if 'http://localhost:3000' not in origins:
 if 'https://campus-management-system-ten.vercel.app' not in origins:
     origins.append('https://campus-management-system-ten.vercel.app')
 
+# Add additional Vercel preview URLs pattern
+origins.append('https://campus-management-system-ten-git-*.vercel.app')
+origins.append('https://campus-management-system-ten-*.vercel.app')
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
