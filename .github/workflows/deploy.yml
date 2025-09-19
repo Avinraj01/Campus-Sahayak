@@ -6,9 +6,18 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Deploy to Render
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
         run: |
-          curl -X POST $RENDER_DEPLOY_HOOK
+          if [ -n "$RENDER_DEPLOY_HOOK" ]; then
+            echo "Deploying to Render..."
+            curl -X POST "$RENDER_DEPLOY_HOOK"
+            echo "Deployment triggered successfully"
+          else
+            echo "RENDER_DEPLOY_HOOK not set, skipping deployment"
+          fi

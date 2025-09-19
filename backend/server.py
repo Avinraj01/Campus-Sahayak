@@ -40,21 +40,9 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # In-memory user store for when database is not available
 IN_MEMORY_USERS = {}
 
-# MongoDB connection
+# MongoDB connection - Initialize without connecting immediately
 client = None
 db = None
-try:
-    mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017/campus_management')
-    client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=1000)  # Short timeout
-    # Test connection explicitly
-    db = client[os.environ.get('DB_NAME', 'campus_management')]
-    
-    print("MongoDB client initialized (connection test deferred to runtime)")
-        
-except Exception as e:
-    print(f"MongoDB client initialization failed: {e} - using fallback mode")
-    client = None
-    db = None
 
 # Validate API key format
 def validate_api_key(api_key):
@@ -832,10 +820,20 @@ async def chat_endpoint(request: ChatRequest, current_user: User = Depends(get_c
             print(f"Messages to send: {len(messages)} messages")
             print(f"System prompt length: {len(messages[0]['content']) if messages else 0} chars")
             
+            # Ensure we're using the latest API key from environment
+            current_api_key = os.getenv("OPENROUTER_API_KEY")
+            print(f"Current API key from env: {current_api_key[:20] if current_api_key else 'None'}...")
+            
+            # Reinitialize the client with the current API key to ensure it's fresh
+            current_openrouter_client = OpenAI(
+                base_url="https://openrouter.ai/api/v1",
+                api_key=current_api_key or OPENROUTER_API_KEY or ""
+            )
+            
             # Use DeepSeek model if DeepSeek API key is provided, otherwise use OpenRouter model
             model_name = "deepseek-chat" if (DEEPSEEK_API_KEY and DEEPSEEK_API_KEY.startswith('sk-')) else "openai/gpt-4o"
             
-            response = openrouter_client.chat.completions.create(
+            response = current_openrouter_client.chat.completions.create(
                 extra_headers={
                     "HTTP-Referer": "https://campus-lingua.preview.emergentagent.com",
                     "X-Title": "Campus Management System",
@@ -851,6 +849,8 @@ async def chat_endpoint(request: ChatRequest, current_user: User = Depends(get_c
             print(f"Response length: {len(bot_response)} chars")
         except Exception as api_error:
             print(f"OpenRouter API Error: {api_error}")
+            import traceback
+            traceback.print_exc()
             # Provide a helpful fallback response
             bot_response = f"""I'm experiencing some technical difficulties with the AI service right now. However, I can still help you with basic campus information:
             
@@ -1028,14 +1028,20 @@ async def get_chat_history(session_id: str, current_user: User = Depends(get_cur
         raise HTTPException(status_code=500, detail=str(e))
 
 # Add a health check endpoint for Render and other deployment platforms
-@app.get("/health")
+@app.get("/healthz")
 async def health_check():
-    """Health check endpoint for deployment platforms"""
+    """Health check endpoint for deployment platforms like Render"""
     return {
         "status": "healthy",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "service": "campus-management-backend"
     }
+
+# Add a simple root endpoint
+@app.get("/")
+async def root():
+    """Simple root endpoint"""
+    return {"message": "Campus Management System Backend is running", "status": "healthy"}
 
 # Add the specific OpenAI endpoint you provided
 @api_router.post("/openai-test")
@@ -1321,25 +1327,13 @@ async def api_info():
 
 
 # CORS configuration - read from environment variable or use defaults
-CORS_ORIGINS = os.environ.get('CORS_ORIGINS', 'http://localhost:3000,https://campus-management-system-ten.vercel.app')
+CORS_ORIGINS = os.environ.get('CORS_ORIGINS', 'http://localhost:3000')
 
 # Handle both single origin and multiple origins
 if ',' in CORS_ORIGINS:
     origins = [origin.strip() for origin in CORS_ORIGINS.split(',')]
 else:
     origins = [CORS_ORIGINS.strip()]
-
-# Ensure localhost:3000 is always included for development
-if 'http://localhost:3000' not in origins:
-    origins.append('http://localhost:3000')
-
-# Ensure Vercel deployment is included
-if 'https://campus-management-system-ten.vercel.app' not in origins:
-    origins.append('https://campus-management-system-ten.vercel.app')
-
-# Add additional Vercel preview URLs pattern
-origins.append('https://campus-management-system-ten-git-*.vercel.app')
-origins.append('https://campus-management-system-ten-*.vercel.app')
 
 app.add_middleware(
     CORSMiddleware,
@@ -1349,6 +1343,28 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Initialize MongoDB connection on startup
+@app.on_event("startup")
+async def startup_db_client():
+    global client, db
+    try:
+        mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017/campus_management')
+        # Initialize client without connecting immediately
+        client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=5000)
+        db = client[os.environ.get('DB_NAME', 'campus_management')]
+        print("MongoDB client initialized")
+    except Exception as e:
+        print(f"MongoDB client initialization failed: {e}")
+        client = None
+        db = None
+
+@app.on_event("shutdown")
+async def shutdown_db_client():
+    global client
+    if client:
+        client.close()
+        print("MongoDB client closed")
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -1356,11 +1372,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    if client:
-        client.close()
-
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
+    import os
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port, reload=True)

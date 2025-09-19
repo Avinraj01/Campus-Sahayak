@@ -3,12 +3,12 @@ services:
     name: campus-backend
     runtime: python
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "uvicorn server:app --host 0.0.0.0 --port $PORT"
+    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
     envVars:
       - key: PYTHON_VERSION
         value: 3.13.4
       - key: CORS_ORIGINS
-        value: "http://localhost:3000,http://localhost:8000,https://campus-management-system-ten.vercel.app,https://campus-management-system-git-deploy-r-4b7e77-avin-rajs-projects.vercel.app,https://campus-management-system-jm6ktfcdz-avin-rajs-projects.vercel.app"
+        value: "https://campus-management-system-ten.vercel.app,https://campus-management-system-git-deploy-r-4b7e77-avin-rajs-projects.vercel.app,https://campus-management-system-jm6ktfcdz-avin-rajs-projects.vercel.app"
       - key: MONGO_URL
         sync: false
       - key: DB_NAME
@@ -17,3 +17,8 @@ services:
         sync: false
       - key: OPENROUTER_API_KEY
         sync: false
+      # Add health check configuration for Render
+      - key: HEALTH_CHECK_PATH
+        value: "/healthz"
+      - key: HEALTH_CHECK_TIMEOUT
+        value: "5"
