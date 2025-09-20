@@ -100,6 +100,10 @@ async def root():
 async def healthz():
     return {"status": "ok"}
 
+@app.get("/api/test")
+async def test_endpoint():
+    return {"message": "API is working correctly"}
+
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
