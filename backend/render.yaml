@@ -1,3 +1,5 @@
+# Render deployment configuration for Campus Management System backend
+# Updated for Render deployment with proper build and start commands
 services:
   - type: web
     name: campus-backend
