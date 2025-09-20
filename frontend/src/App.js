@@ -327,10 +327,10 @@ const LoginPage = () => {
     
     try {
       console.log('Attempting login with:', formData);
-      console.log('API URL:', `/auth/login`);
+      console.log('API URL:', `/api/auth/login`);
       console.log('API Base URL:', api.defaults.baseURL);
       
-      const response = await api.post("/auth/login", formData);
+      const response = await api.post("/api/auth/login", formData);
       console.log('Login successful:', response.data);
       
       // Log the response data before calling login
@@ -433,9 +433,9 @@ Please check:
     
     try {
       console.log('Attempting registration with data:', signupData);
-      console.log('API URL:', `/auth/register`);
+      console.log('API URL:', `/api/auth/register`);
       
-      const response = await api.post("/auth/register", signupData);
+      const response = await api.post("/api/auth/register", signupData);
       console.log('Registration successful:', response.data);
       
       // Log the response data before calling login
@@ -839,7 +839,7 @@ const Dashboard = () => {
   }, [messages]);
 
   const sendMessage = async () => {
-    if (!inputMessage.trim()) return;
+    if (!inputMessage.trim() || isLoading) return;
 
     const userMessage = {
       id: Date.now(),
@@ -853,7 +853,8 @@ const Dashboard = () => {
     setIsLoading(true);
 
     try {
-      const response = await api.post("/chat", {
+      // For Vercel deployment, we need to use the full path since the proxy rewrites /api/:path*
+      const response = await api.post("/api/chat", {
         message: inputMessage,
         session_id: sessionId,
         language: selectedLanguage
@@ -878,13 +879,35 @@ const Dashboard = () => {
       }
     } catch (error) {
       console.error("Chat error:", error);
-      const errorMessage = {
+      let errorMessage = "I'm sorry, I'm having trouble responding right now. Please contact our admin office at +916200060778.";
+      
+      // Provide more specific error messages based on the error type
+      if (error.response) {
+        // Server responded with error status
+        if (error.response.status === 401) {
+          errorMessage = "Authentication error. Please log in again.";
+        } else if (error.response.status === 403) {
+          errorMessage = "Access denied. Please contact admin.";
+        } else if (error.response.status === 404) {
+          errorMessage = "Service not found. Please try again later.";
+        } else if (error.response.status >= 500) {
+          errorMessage = "Server error. Please try again later or contact admin.";
+        }
+      } else if (error.request) {
+        // Request was made but no response received
+        errorMessage = "Network error. Please check your internet connection and try again.";
+      } else {
+        // Something else happened
+        errorMessage = "An unexpected error occurred. Please try again.";
+      }
+
+      const errorBotMessage = {
         id: Date.now() + 1,
-        message: "I'm sorry, I'm having trouble responding right now. Please contact our admin office at +916200060778.",
+        message: errorMessage,
         sender: "bot",
         timestamp: new Date().toISOString()
       };
-      setMessages(prev => [...prev, errorMessage]);
+      setMessages(prev => [...prev, errorBotMessage]);
     } finally {
       setIsLoading(false);
     }

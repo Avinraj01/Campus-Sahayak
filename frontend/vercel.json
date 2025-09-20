@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://campus-management-system-backend.onrender.com/api/:path*"
+      "destination": "https://campus-management-backend-3x1h.onrender.com/:path*"
     }
   ]
 }

@@ -44,7 +44,7 @@ const ComplaintsPage = () => {
 
   const fetchComplaints = async () => {
     try {
-      const response = await api.get("/complaints");
+      const response = await api.get("/api/complaints");
       setComplaints(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error fetching complaints:', error);
@@ -62,7 +62,7 @@ const ComplaintsPage = () => {
     setSubmitLoading(true);
 
     try {
-      await api.post("/complaints", formData);
+      await api.post("/api/complaints", formData);
       alert('Complaint submitted successfully!');
       setFormData({ title: '', description: '', category: 'academic' });
       fetchComplaints(); // Refresh the list

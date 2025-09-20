@@ -22,7 +22,7 @@ async function registerUser(email, password, fullName, userType = 'student') {
       full_name: fullName
     };
     
-    const response = await api.post('/auth/register', registrationData);
+    const response = await api.post('/api/auth/register', registrationData);
     console.log('✅ Registration successful!');
     console.log(`User: ${response.data.user.full_name} (${response.data.user.email})`);
     console.log(`Token: ${response.data.access_token.substring(0, 20)}...\n`);
@@ -51,7 +51,7 @@ async function loginUser(identifier, password, userType = 'student') {
       user_type: userType
     };
     
-    const response = await api.post('/auth/login', loginData);
+    const response = await api.post('/api/auth/login', loginData);
     console.log('✅ Login successful!');
     console.log(`User: ${response.data.user.full_name} (${response.data.user.email})`);
     console.log(`Token: ${response.data.access_token.substring(0, 20)}...\n`);

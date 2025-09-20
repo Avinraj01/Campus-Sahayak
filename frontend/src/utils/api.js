@@ -12,7 +12,7 @@ export const api = axios.create({
     "Content-Type": "application/json",
   },
   // Add timeout to prevent hanging requests
-  timeout: 15000, // Increased timeout to 15 seconds
+  timeout: 30000, // Increased timeout to 30 seconds for better reliability
 });
 
 // Add a request interceptor to automatically add the Authorization header

@@ -719,7 +719,8 @@ const Dashboard = () => {
     setIsLoading(true);
 
     try {
-      const response = await api.post("/chat", {
+      // For Vercel deployment, we need to use the full path since the proxy rewrites /api/:path*
+      const response = await api.post("/api/chat", {
         message: inputMessage,
         session_id: sessionId,
         language: selectedLanguage
@@ -744,13 +745,35 @@ const Dashboard = () => {
       }
     } catch (error) {
       console.error("Chat error:", error);
-      const errorMessage = {
+      let errorMessage = "I'm sorry, I'm having trouble responding right now. Please contact our admin office at +916200060778.";
+      
+      // Provide more specific error messages based on the error type
+      if (error.response) {
+        // Server responded with error status
+        if (error.response.status === 401) {
+          errorMessage = "Authentication error. Please log in again.";
+        } else if (error.response.status === 403) {
+          errorMessage = "Access denied. Please contact admin.";
+        } else if (error.response.status === 404) {
+          errorMessage = "Service not found. Please try again later.";
+        } else if (error.response.status >= 500) {
+          errorMessage = "Server error. Please try again later or contact admin.";
+        }
+      } else if (error.request) {
+        // Request was made but no response received
+        errorMessage = "Network error. Please check your internet connection and try again.";
+      } else {
+        // Something else happened
+        errorMessage = "An unexpected error occurred. Please try again.";
+      }
+
+      const errorBotMessage = {
         id: Date.now() + 1,
-        message: "I'm sorry, I'm having trouble responding right now. Please contact our admin office at +916200060778.",
+        message: errorMessage,
         sender: "bot",
         timestamp: new Date().toISOString()
       };
-      setMessages(prev => [...prev, errorMessage]);
+      setMessages(prev => [...prev, errorBotMessage]);
     } finally {
       setIsLoading(false);
     }

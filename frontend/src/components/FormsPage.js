@@ -54,7 +54,7 @@ const FormsPage = () => {
         formDataToSend.append('file', file);
       }
 
-      await api.post("/forms", formDataToSend, {
+      await api.post("/api/forms", formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -75,7 +75,7 @@ const FormsPage = () => {
 
   const fetchSubmissions = async () => {
     try {
-      const response = await api.get("/forms");
+      const response = await api.get("/api/forms");
       setSubmissions(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error fetching submissions:', error);

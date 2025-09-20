@@ -27,7 +27,7 @@ async function testRegistration() {
     };
     
     console.log('Sending registration request with data:', registrationData);
-    const registerResponse = await api.post('/auth/register', registrationData);
+    const registerResponse = await api.post('/api/auth/register', registrationData);
     console.log('Registration successful:', registerResponse.data);
     
     // Return the credentials for login test
@@ -53,7 +53,7 @@ async function testLogin(credentials) {
     };
     
     console.log('Sending login request with data:', loginData);
-    const loginResponse = await api.post('/auth/login', loginData);
+    const loginResponse = await api.post('/api/auth/login', loginData);
     console.log('Login successful:', loginResponse.data);
     return loginResponse.data;
   } catch (error) {

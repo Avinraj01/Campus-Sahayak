@@ -23,7 +23,7 @@ const NoticesPage = () => {
   useEffect(() => {
     const fetchNotices = async () => {
       try {
-        const response = await api.get("/notices");
+        const response = await api.get("/api/notices");
         setNotices(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
         console.error('Error fetching notices:', error);

@@ -9,7 +9,7 @@ console.log('API Base URL:', API_BASE);
 export async function testLogin() {
   try {
     console.log('\n--- Testing Login Endpoint ---');
-    const response = await api.post("/auth/login", {
+    const response = await api.post("/api/auth/login", {
       identifier: 'test@example.com',
       password: 'wrongpassword',
       user_type: 'student'
@@ -26,7 +26,7 @@ export async function testLogin() {
 export async function testSignup() {
   try {
     console.log('\n--- Testing Signup Endpoint ---');
-    const response = await api.post("/auth/register", {
+    const response = await api.post("/api/auth/register", {
       email: 'testuser@example.com',
       password: 'testpassword',
       user_type: 'student',
