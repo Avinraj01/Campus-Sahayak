@@ -87,6 +87,15 @@ security = HTTPBearer()
 # Create the main app without a prefix
 app = FastAPI(title="Campus Management System")
 
+# Health check endpoints
+@app.get("/")
+async def root():
+    return {"message": "Backend is running"}
+
+@app.get("/healthz")
+async def healthz():
+    return {"status": "ok"}
+
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
