@@ -91,6 +91,15 @@ security = HTTPBearer()
 # Create the main app without a prefix
 app = FastAPI(title="Campus Management System")
 
+# Health check endpoints
+@app.get("/")
+async def root():
+    return {"message": "Backend is running"}
+
+@app.get("/healthz")
+async def healthz():
+    return {"status": "ok"}
+
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
@@ -1363,4 +1372,6 @@ async def shutdown_db_client():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
+    import os
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port, reload=True)
