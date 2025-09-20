@@ -1,96 +1,73 @@
-# Deployment Guide for Campus Management System
+# Campus Management System - Backend Deployment
 
-This guide explains how to deploy the Campus Management System to various hosting platforms.
+## Render Deployment Instructions
 
-## Prerequisites
+This document provides instructions for deploying the backend to Render.
 
-1. A hosting platform account (Render, Heroku, AWS, etc.)
-2. A MongoDB database (MongoDB Atlas or self-hosted)
-3. An OpenRouter API key (https://openrouter.ai/)
+### Deployment Configuration
 
-## Environment Variables
+The application is configured to work with Render using the following settings:
 
-When deploying to any platform, you must set the following environment variables:
+1. **Build Command**: `pip install -r requirements.txt`
+2. **Start Command**: `python -m uvicorn server:app --host 0.0.0.0 --port $PORT`
+3. **Python Version**: 3.13.4 (specified in render.yaml)
 
-| Variable | Description | Example Value |
-|----------|-------------|---------------|
-| `CORS_ORIGINS` | Comma-separated list of allowed frontend origins | `https://your-frontend-domain.com,http://localhost:3000` |
-| `MONGO_URL` | MongoDB connection string | `mongodb+srv://user:pass@cluster.mongodb.net/db` |
-| `DB_NAME` | Database name | `campus_management` |
-| `JWT_SECRET` | Secret key for JWT tokens | `your-random-secret-key` |
-| `OPENROUTER_API_KEY` | OpenRouter API key | `sk-or-v1-xxxxxxxxxxxxxxxxxxxx` |
+### Environment Variables
 
-## General Deployment Steps
+The following environment variables must be set in Render:
 
-### 1. Prepare Your Hosting Platform
+- `OPENROUTER_API_KEY` - Your OpenRouter API key for AI chatbot functionality
+- `MONGO_URL` - MongoDB connection string
+- `DB_NAME` - Database name (default: campusDB)
+- `JWT_SECRET` - Secret key for JWT token signing
+- `CORS_ORIGINS` - Comma-separated list of allowed origins
 
-1. Create an account on your preferred hosting platform
-2. Create a new web service or application
-3. Connect your GitHub repository or upload your code
+### Health Checks
 
-### 2. Configure the Service
+Render will use the `/health` endpoint to check the application status.
 
-- **Runtime**: Python 3
-- **Build Command**: `pip install -r requirements.txt`
-- **Start Command**: `python server.py` or `uvicorn server:app --host 0.0.0.0 --port $PORT`
-- **Instance Type**: Free or Standard (based on your needs)
+### File Structure
 
-### 3. Set Environment Variables
+```
+backend/
+├── server.py          # Main FastAPI application
+├── main.py            # Entry point for Render
+├── start_server.py    # Alternative entry point
+├── requirements.txt   # Python dependencies
+├── render.yaml        # Render deployment configuration
+├── .env.example       # Example environment variables
+└── DEPLOYMENT.md      # This file
+```
 
-In your hosting platform's environment configuration section, add all the required variables listed above.
+### Local Development
 
-### 4. Configure Auto-Deploy
+To run locally:
 
-Enable auto-deploy from your preferred branch (usually `main` or `master`).
+```bash
+cd backend
+pip install -r requirements.txt
+python server.py
+```
 
-### 5. Deploy
+Or using uvicorn directly:
 
-Follow your hosting platform's deployment process to start the deployment.
+```bash
+cd backend
+uvicorn server:app --host 0.0.0.0 --port 8000 --reload
+```
 
-## MongoDB Atlas Setup
+### Troubleshooting
 
-If using MongoDB Atlas:
+1. **Import Errors**: Ensure all dependencies are installed with `pip install -r requirements.txt`
+2. **Environment Variables**: Check that all required environment variables are set
+3. **Port Issues**: Render provides the PORT environment variable - don't hardcode ports
+4. **CORS Issues**: Verify CORS_ORIGINS includes your frontend URLs
 
-1. Create a new cluster or use an existing one
-2. Create a database user with read/write permissions
-3. Add your hosting service IP to the IP whitelist (or use 0.0.0.0/0 for testing)
-4. Get the connection string and set it as `MONGO_URL` in your hosting platform
+### Deployment Verification
 
-## Custom Domain (Optional)
+Run the deployment check script to verify configuration:
 
-1. In your hosting platform dashboard, go to your web service
-2. Look for custom domain settings
-3. Add your domain and follow the DNS instructions provided by your platform
-
-## Health Checks
-
-The application includes a health check endpoint at the root (`/`) that returns API information.
-Most hosting platforms will automatically use this to check service health.
-
-## Troubleshooting
-
-### Common Issues
-
-1. **CORS Errors**: Ensure `CORS_ORIGINS` includes your frontend domain
-2. **Database Connection**: Verify `MONGO_URL` is correct and the database is accessible
-3. **API Key Issues**: Check that `OPENROUTER_API_KEY` is valid and has credits
-4. **Startup Failures**: Check logs in your hosting platform dashboard for error messages
-
-### Viewing Logs
-
-1. Go to your service in your hosting platform dashboard
-2. Look for a "Logs" or "Monitoring" section to view real-time application logs
-3. Look for error messages to diagnose issues
-
-## Scaling
-
-For production use, consider:
-
-1. Upgrading to a paid hosting plan for better performance
-2. Using a dedicated MongoDB instance
-3. Adding monitoring and alerting
-4. Setting up backup strategies
-
-## Support
-
-For support, contact: avinyaduvansi123@gmail.com
+```bash
+cd backend
+python deployment_check.py
+```

@@ -1,42 +1,63 @@
-from openai import OpenAI
+#!/usr/bin/env python3
+"""
+Test script to verify OpenRouter API key and functionality
+"""
+
 import os
+import sys
+
+# Add the backend directory to the path and load environment variables
+sys.path.append('backend')
 from dotenv import load_dotenv
+load_dotenv('backend/.env')  # Load .env from backend directory
 
-# Load environment variables
-load_dotenv()
+from openai import OpenAI
 
-# Get the API key from environment variables
-api_key = os.getenv('OPENROUTER_API_KEY')
-
-if not api_key:
-    print("Error: OPENROUTER_API_KEY not found in environment variables")
-    exit(1)
-
-print(f"Using API key: {api_key[:20]}...")
-
-client = OpenAI(
-    base_url="https://openrouter.ai/api/v1",
-    api_key=api_key,
-)
-
-try:
-    completion = client.chat.completions.create(
-        extra_headers={
-            "HTTP-Referer": "http://localhost:3000",  # Optional: your site URL
-            "X-Title": "Campus Management System",      # Optional: your site name
-        },
-        model="openai/gpt-4o-mini",  # Using gpt-4o-mini as it's more cost-effective
-        messages=[
-            {
-                "role": "user",
-                "content": "What is the meaning of life?"
-            }
-        ],
-        max_tokens=150  # Limit tokens to stay within free tier
-    )
-
-    print("API Response:")
-    print(completion.choices[0].message.content)
+def test_openrouter():
+    """Test OpenRouter API key and basic functionality"""
     
-except Exception as e:
-    print(f"Error occurred: {e}")
+    # Get API key from environment
+    api_key = os.getenv("OPENROUTER_API_KEY")
+    
+    if not api_key:
+        print("❌ OPENROUTER_API_KEY not found in environment variables")
+        return False
+    
+    print(f"✅ OPENROUTER_API_KEY found: {api_key[:20]}...")
+    
+    # Test basic API call
+    try:
+        client = OpenAI(
+            base_url="https://openrouter.ai/api/v1",
+            api_key=api_key
+        )
+        
+        print("✅ OpenRouter client created successfully")
+        
+        # Test a simple completion
+        response = client.chat.completions.create(
+            model="openai/gpt-4o-mini",
+            messages=[
+                {"role": "user", "content": "List the first 3 Prime Ministers of India?"}
+            ],
+            max_tokens=200
+        )
+        
+        answer = response.choices[0].message.content
+        print("✅ API call successful!")
+        print(f"Response: {answer}")
+        return True
+        
+    except Exception as e:
+        print(f"❌ OpenRouter API test failed: {e}")
+        return False
+
+if __name__ == "__main__":
+    print("Testing OpenRouter API...")
+    print("=" * 30)
+    success = test_openrouter()
+    
+    if success:
+        print("\n✅ OpenRouter is working correctly!")
+    else:
+        print("\n❌ OpenRouter is not working. Please check your API key.")

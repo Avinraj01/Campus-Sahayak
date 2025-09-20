@@ -1,19 +1,21 @@
 services:
   - type: web
-    name: campus-backend
+    name: campus-management-backend
     runtime: python
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "uvicorn server:app --host 0.0.0.0 --port $PORT"
+    startCommand: "python -m uvicorn server:app --host 0.0.0.0 --port $PORT"
     envVars:
       - key: PYTHON_VERSION
-        value: 3.10.0
+        value: 3.13.4
       - key: CORS_ORIGINS
-        value: "http://localhost:3000,http://localhost:8000,https://campus-management-system-ten.vercel.app,https://campus-management-system-git-deploy-r-4b7e77-avin-rajs-projects.vercel.app,https://campus-management-system-jm6ktfcdz-avin-rajs-projects.vercel.app"
+        value: "http://localhost:3000,http://localhost:8000,https://campus-management-system-ten.vercel.app,https://campus-management-system-git-deploy-r-4b7e77-avin-rajs-projects.vercel.app,https://campus-management-system-jm6ktfcdz-avin-rajs-projects.vercel.app,https://campus-management-system-frontend.vercel.app"
       - key: MONGO_URL
         sync: false
       - key: DB_NAME
-        sync: false
+        value: campusDB
       - key: JWT_SECRET
         sync: false
       - key: OPENROUTER_API_KEY
         sync: false
+      - key: OPENROUTER_MODEL
+        value: openai/gpt-4o

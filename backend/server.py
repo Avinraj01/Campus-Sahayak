@@ -23,11 +23,24 @@ import re  # Add this import for regex validation
 import os
 from dotenv import load_dotenv
 
-load_dotenv()  # load local .env during development
+# Load environment variables from .env file if it exists (for local development)
+if os.path.exists('.env'):
+    load_dotenv()
+    print("Loaded environment variables from .env file")
 
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017/mydb")
-JWT_SECRET = os.getenv("JWT_SECRET", "change-me-in-prod")
+# Debug: Print key environment variables for troubleshooting
+print("=== Environment Variables Debug ===")
+print(f"OPENROUTER_API_KEY: {os.environ.get('OPENROUTER_API_KEY', 'Not set')[:20] if os.environ.get('OPENROUTER_API_KEY') else 'Not set'}...")
+print(f"OPENROUTER_MODEL: {os.environ.get('OPENROUTER_MODEL', 'Not set')}")
+print(f"MONGO_URL: {os.environ.get('MONGO_URL', 'Not set')[:30] if os.environ.get('MONGO_URL') else 'Not set'}...")
+print(f"DB_NAME: {os.environ.get('DB_NAME', 'Not set')}")
+print(f"JWT_SECRET: {'Set' if os.environ.get('JWT_SECRET') else 'Not set'}")
+print("==================================")
+
+OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
+MONGO_URL = os.environ.get("MONGO_URL", "mongodb://localhost:27017/mydb")
+JWT_SECRET = os.environ.get("JWT_SECRET", "change-me-in-prod")
+DB_NAME = os.environ.get("DB_NAME", "campus_management")
 
 import logging
 if not OPENROUTER_API_KEY:
@@ -45,11 +58,16 @@ client = None
 db = None
 try:
     mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017/campus_management')
-    client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=1000)  # Short timeout
-    # Test connection explicitly
-    db = client[os.environ.get('DB_NAME', 'campus_management')]
+    db_name = os.environ.get('DB_NAME', 'campus_management')
     
-    print("MongoDB client initialized (connection test deferred to runtime)")
+    if mongo_url and db_name:
+        print(f"Attempting to connect to MongoDB: {mongo_url} with database: {db_name}")
+        client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=5000)  # 5 second timeout
+        # Test connection explicitly
+        db = client[db_name]
+        print("MongoDB client initialized successfully")
+    else:
+        print("MongoDB configuration not found, using in-memory storage only")
         
 except Exception as e:
     print(f"MongoDB client initialization failed: {e} - using fallback mode")
@@ -61,8 +79,8 @@ def validate_api_key(api_key):
     if not api_key:
         return False
     # OpenRouter API keys typically start with 'sk-or-v1-'
-    pattern = r'^sk-or-v1-[A-Za-z0-9]{32,}$'
-    return re.match(pattern, api_key) is not None
+    # But we should accept the key as long as it's provided
+    return len(api_key) > 20  # Basic length check instead of strict regex
 
 # OpenRouter client setup
 # For debugging, let's print the API key info
@@ -70,18 +88,45 @@ print(f"OpenRouter API Key loaded: {OPENROUTER_API_KEY[:20] if OPENROUTER_API_KE
 
 # DeepSeek client setup (fallback to OpenRouter if DeepSeek key not provided)
 DEEPSEEK_API_KEY = os.environ.get('DEEPSEEK_API_KEY')
+OPENROUTER_MODEL = os.environ.get('OPENROUTER_MODEL', 'openai/gpt-4o')  # Use gpt-4o as default to match working example
+
+openrouter_client = None
+
 if DEEPSEEK_API_KEY and DEEPSEEK_API_KEY.startswith('sk-'):
     print(f"DeepSeek API Key loaded: {DEEPSEEK_API_KEY[:20]}...")
-    openrouter_client = OpenAI(
-        base_url="https://api.deepseek.com",
-        api_key=DEEPSEEK_API_KEY
-    )
+    try:
+        openrouter_client = OpenAI(
+            base_url="https://api.deepseek.com",
+            api_key=DEEPSEEK_API_KEY
+        )
+        print("DeepSeek client initialized successfully")
+    except Exception as e:
+        print(f"Failed to initialize DeepSeek client: {e}")
+        openrouter_client = None
 else:
     print("DeepSeek API Key not found or invalid, using OpenRouter as fallback")
-    openrouter_client = OpenAI(
-        base_url="https://openrouter.ai/api/v1",
-        api_key=OPENROUTER_API_KEY or ""
-    )
+    print(f"Using OpenRouter model: {OPENROUTER_MODEL}")
+    # Check if we have an OpenRouter API key
+    if OPENROUTER_API_KEY:
+        print("OpenRouter API Key is present")
+        try:
+            openrouter_client = OpenAI(
+                base_url="https://openrouter.ai/api/v1",
+                api_key=OPENROUTER_API_KEY
+            )
+            print("OpenRouter client initialized successfully")
+            print(f"OpenRouter client type: {type(openrouter_client)}")
+        except Exception as e:
+            print(f"Failed to initialize OpenRouter client: {e}")
+            import traceback
+            traceback.print_exc()
+            openrouter_client = None
+    else:
+        print("OpenRouter API Key is missing. AI features will be disabled.")
+        openrouter_client = None
+
+# Print the final state of the client
+print(f"Final openrouter_client value: {openrouter_client}")
 
 # JWT Configuration
 JWT_SECRET = os.environ.get('JWT_SECRET', 'your-secret-key-here-change-in-production')
@@ -99,6 +144,27 @@ async def root():
 @app.get("/healthz")
 async def healthz():
     return {"status": "ok"}
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for Render and other deployment platforms"""
+    # Check MongoDB connection if available
+    db_status = "not_configured"
+    if db is not None:
+        try:
+            # Attempt a simple database operation to verify connection
+            await db.command("ping")
+            db_status = "connected"
+        except Exception as e:
+            db_status = f"error: {str(e)}"
+    
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "service": "campus-management-backend",
+        "database": db_status,
+        "openrouter_client": "available" if openrouter_client else "not_available"
+    }
 
 @app.get("/api/test")
 async def test_endpoint():
@@ -706,12 +772,20 @@ async def debug_users():
 @api_router.post("/test-chat")
 async def test_chat_no_auth(request: dict):
     """Test chat endpoint without authentication for debugging"""
+    # Check if OpenRouter client is available
+    if not openrouter_client:
+        return {
+            "status": "error",
+            "error": "OpenRouter API client is not configured. Please set a valid OPENROUTER_API_KEY in your environment variables.",
+            "message": request.get("message", "Hello")
+        }
+    
     try:
         message = request.get("message", "Hello")
         print(f"Test chat request: {message}")
         
         # Use DeepSeek model if DeepSeek API key is provided, otherwise use OpenRouter model
-        model_name = "deepseek-chat" if (DEEPSEEK_API_KEY and DEEPSEEK_API_KEY.startswith('sk-')) else "openai/gpt-4o"
+        model_name = "deepseek-chat" if (DEEPSEEK_API_KEY and DEEPSEEK_API_KEY.startswith('sk-')) else OPENROUTER_MODEL
         
         response = openrouter_client.chat.completions.create(
             model=model_name,
@@ -744,7 +818,7 @@ async def test_openrouter():
     try:
         print(f"Testing DeepSeek/OpenRouter API...")
         # Use DeepSeek model if DeepSeek API key is provided, otherwise use OpenRouter model
-        model_name = "deepseek-chat" if (DEEPSEEK_API_KEY and DEEPSEEK_API_KEY.startswith('sk-')) else "openai/gpt-4o"
+        model_name = "deepseek-chat" if (DEEPSEEK_API_KEY and DEEPSEEK_API_KEY.startswith('sk-')) else OPENROUTER_MODEL
         
         response = openrouter_client.chat.completions.create(
             model=model_name,
@@ -761,7 +835,8 @@ async def test_openrouter():
             "status": "success",
             "message": "DeepSeek/OpenRouter API is working",
             "response": test_response,
-            "api_key_type": "DeepSeek" if (DEEPSEEK_API_KEY and DEEPSEEK_API_KEY.startswith('sk-')) else "OpenRouter"
+            "api_key_type": "DeepSeek" if (DEEPSEEK_API_KEY and DEEPSEEK_API_KEY.startswith('sk-')) else "OpenRouter",
+            "model": model_name
         }
     except Exception as e:
         print(f"DeepSeek/OpenRouter API test failed: {e}")
@@ -845,9 +920,17 @@ async def chat_endpoint(request: ChatRequest, current_user: User = Depends(get_c
             print(f"Messages to send: {len(messages)} messages")
             print(f"System prompt length: {len(messages[0]['content']) if messages else 0} chars")
             
+            # Check if OpenRouter client is available
+            if not openrouter_client:
+                raise Exception("OpenRouter API client is not configured. Please set a valid OPENROUTER_API_KEY in your environment variables.")
+                
             # Use DeepSeek model if DeepSeek API key is provided, otherwise use OpenRouter model
-            model_name = "deepseek-chat" if (DEEPSEEK_API_KEY and DEEPSEEK_API_KEY.startswith('sk-')) else "openai/gpt-4o"
+            model_name = "deepseek-chat" if (DEEPSEEK_API_KEY and DEEPSEEK_API_KEY.startswith('sk-')) else OPENROUTER_MODEL
+            print(f"Using model: {model_name}")
             
+            # Print the messages being sent for debugging
+            print(f"Sending messages: {messages}")
+                
             response = openrouter_client.chat.completions.create(
                 extra_headers={
                     "HTTP-Referer": "https://campus-lingua.preview.emergentagent.com",
@@ -855,15 +938,17 @@ async def chat_endpoint(request: ChatRequest, current_user: User = Depends(get_c
                 },
                 model=model_name,
                 messages=messages,
-                max_tokens=200,
+                max_tokens=300,  # Increased token limit for better responses
                 temperature=0.7
             )
-            
+                
             bot_response = response.choices[0].message.content
             print(f"Received response from DeepSeek/OpenRouter: {bot_response[:100]}...")
             print(f"Response length: {len(bot_response)} chars")
         except Exception as api_error:
             print(f"OpenRouter API Error: {api_error}")
+            import traceback
+            traceback.print_exc()  # Print full traceback for debugging
             # Provide a helpful fallback response
             bot_response = f"""I'm experiencing some technical difficulties with the AI service right now. However, I can still help you with basic campus information:
             
@@ -1334,7 +1419,7 @@ async def api_info():
 
 
 # CORS configuration - read from environment variable or use defaults
-CORS_ORIGINS = os.environ.get('CORS_ORIGINS', 'http://localhost:3000,https://campus-management-system-ten.vercel.app')
+CORS_ORIGINS = os.environ.get('CORS_ORIGINS', 'http://localhost:3000,https://campus-management-system-ten.vercel.app,https://campus-management-system-frontend.vercel.app')
 
 # Handle both single origin and multiple origins
 if ',' in CORS_ORIGINS:
@@ -1350,9 +1435,11 @@ if 'http://localhost:3000' not in origins:
 if 'https://campus-management-system-ten.vercel.app' not in origins:
     origins.append('https://campus-management-system-ten.vercel.app')
 
-# Add additional Vercel preview URLs pattern
-origins.append('https://campus-management-system-ten-git-*.vercel.app')
-origins.append('https://campus-management-system-ten-*.vercel.app')
+# Add additional Vercel preview URLs pattern (using regex for wildcard matching)
+origins.append('https://campus-management-system-ten-git-.*.vercel.app')
+origins.append('https://campus-management-system-ten-.*.vercel.app')
+
+print(f"CORS origins configured: {origins}")
 
 app.add_middleware(
     CORSMiddleware,

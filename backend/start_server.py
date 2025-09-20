@@ -19,4 +19,10 @@ if __name__ == "__main__":
     host = os.environ.get("HOST", "0.0.0.0")
     
     print(f"Starting server on {host}:{port}")
-    uvicorn.run(app, host=host, port=port, reload=False)
+    uvicorn.run(
+        "server:app",
+        host=host,
+        port=port,
+        reload=False,
+        log_level="info"
+    )

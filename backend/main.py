@@ -12,7 +12,7 @@ if __name__ == "__main__":
     
     # Run the app with proper configuration for Render
     uvicorn.run(
-        app,  # Direct reference to the app instance
+        "server:app",  # Use string reference for better compatibility
         host="0.0.0.0",
         port=port,
         workers=1,  # Use single worker for free tier
