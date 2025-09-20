@@ -1281,6 +1281,20 @@ async def api_info():
         }
     }
 
+# Health check endpoints for Render deployment
+@app.get("/")
+@app.get("/healthz")
+async def health_check():
+    return {"status": "healthy", "message": "Campus Management System API is running"}
+
+# Add health check endpoints to API router as well
+@api_router.get("/")
+@api_router.get("/healthz")
+async def api_health_check():
+    return {"status": "healthy", "message": "Campus Management System API is running"}
+
+# Include the API router
+app.include_router(api_router)
 
 # CORS configuration - read from environment variable or use defaults
 CORS_ORIGINS = os.environ.get('CORS_ORIGINS', 'http://localhost:3000')
