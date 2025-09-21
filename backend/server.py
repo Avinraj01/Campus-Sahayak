@@ -32,22 +32,21 @@ if os.path.exists('.env'):
 print("=== Environment Variables Debug ===")
 print(f"OPENROUTER_API_KEY: {os.environ.get('OPENROUTER_API_KEY', 'Not set')[:20] if os.environ.get('OPENROUTER_API_KEY') else 'Not set'}...")
 print(f"OPENROUTER_MODEL: {os.environ.get('OPENROUTER_MODEL', 'Not set')}")
-print(f"MONGO_URI: {os.environ.get('MONGO_URI', 'Not set')[:30] if os.environ.get('MONGO_URI') else 'Not set'}...")
+print(f"MONGO_URI: {os.environ.get('MONGO_URI', 'Not set')[:50] if os.environ.get('MONGO_URI') else 'Not set'}...")
+print(f"MONGO_URL: {os.environ.get('MONGO_URL', 'Not set')[:50] if os.environ.get('MONGO_URL') else 'Not set'}...")
 print(f"DB_NAME: {os.environ.get('DB_NAME', 'Not set')}")
 print(f"JWT_SECRET: {'Set' if os.environ.get('JWT_SECRET') else 'Not set'}")
 print("==================================")
 
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
-# Use MONGO_URI instead of MONGO_URL to match Render environment variables
-MONGO_URI = os.environ.get("MONGO_URI")
-# Debug: Print the actual MONGO_URI being used
-print(f"MONGO_URI from environment: {os.environ.get('MONGO_URI', 'Not set')}")
+# Use MONGO_URI as primary, with fallback to MONGO_URL (for Render compatibility)
+MONGO_URI = os.environ.get("MONGO_URI") or os.environ.get("MONGO_URL")
 DB_NAME = os.environ.get("DB_NAME", "campusDB")
 JWT_SECRET = os.environ.get("JWT_SECRET", "change-me-in-prod")
 
-import logging
-if not OPENROUTER_API_KEY:
-    logging.warning("OPENROUTER_API_KEY is not set. AI features will fail until you set OPENROUTER_API_KEY in environment or in backend/.env (local dev).")
+# Print the actual values being used
+print(f"Using MONGO_URI: {MONGO_URI[:50] if MONGO_URI else 'None'}...")
+print(f"Using DB_NAME: {DB_NAME}")
 # --- end env load ---
 
 # Password hashing context
@@ -60,16 +59,16 @@ IN_MEMORY_USERS = {}
 client = None
 db = None
 try:
-    # Use MONGO_URI instead of MONGO_URL to match Render environment variables
+    # Use MONGO_URI as primary, with fallback to MONGO_URL (for Render compatibility)
     mongo_uri = MONGO_URI
     db_name = os.environ.get('DB_NAME', 'campusDB')
     
     # Debug: Print the values being used
-    print(f"Using mongo_uri: {mongo_uri}")
+    print(f"Using mongo_uri: {mongo_uri[:50] if mongo_uri else 'None'}...")
     print(f"Using db_name: {db_name}")
     
     if mongo_uri and db_name:
-        print(f"Attempting to connect to MongoDB: {mongo_uri} with database: {db_name}")
+        print(f"Attempting to connect to MongoDB with database: {db_name}")
         # Add SSL options for Render deployment
         client = AsyncIOMotorClient(
             mongo_uri, 
@@ -82,9 +81,13 @@ try:
         print("MongoDB client initialized successfully")
     else:
         print("MongoDB configuration not found, using in-memory storage only")
+        print(f"MONGO_URI value: {mongo_uri}")
+        print(f"DB_NAME value: {db_name}")
         
 except Exception as e:
     print(f"MongoDB client initialization failed: {e} - using fallback mode")
+    import traceback
+    traceback.print_exc()
     client = None
     db = None
 
@@ -171,13 +174,17 @@ async def health_check():
             db_status = "connected"
         except Exception as e:
             db_status = f"error: {str(e)}"
+    else:
+        db_status = "None - using in-memory storage"
     
     return {
         "status": "healthy",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "service": "campus-management-backend",
         "database": db_status,
-        "openrouter_client": "available" if openrouter_client else "not_available"
+        "openrouter_client": "available" if openrouter_client else "not_available",
+        "mongo_uri": MONGO_URI[:50] if MONGO_URI else "Not set",
+        "db_name": DB_NAME
     }
 
 @app.get("/api/test")
@@ -436,11 +443,14 @@ async def search_web_for_scholarships(query: str) -> str:
 # Authentication Routes
 @api_router.post("/auth/register", response_model=TokenResponse)
 async def register(user_data: UserCreate):
+    print(f"=== REGISTER ENDPOINT CALLED ===")
+    print(f"Request data: {user_data}")
     try:
         if db is None:
             print("Database is None, using in-memory storage")
             # Check if user already exists in memory
             if user_data.email in IN_MEMORY_USERS:
+                print(f"User {user_data.email} already exists in memory")
                 raise HTTPException(status_code=400, detail="Email already registered")
                 
             # Store user in memory when no database
@@ -474,6 +484,7 @@ async def register(user_data: UserCreate):
                 teacher_id=user_record["teacher_id"]
             )
             
+            print(f"Registration successful for {user_data.email}")
             return TokenResponse(
                 access_token=access_token,
                 token_type="bearer",
@@ -567,32 +578,41 @@ async def register(user_data: UserCreate):
 
 @api_router.post("/auth/login", response_model=TokenResponse)
 async def login(user_data: UserLogin):
+    print(f"=== LOGIN ENDPOINT CALLED ===")
+    print(f"Request data: {user_data}")
     try:
         # Always check in-memory store first when no database or when database fails
         if db is None:
+            print("Database is None, checking in-memory storage")
             # Validate credentials from in-memory store
             # First check if identifier is an email
             user_record = None
             if "@" in user_data.identifier:
                 # If identifier is email, look it up directly
                 user_record = IN_MEMORY_USERS.get(user_data.identifier)
+                print(f"Looking up user by email: {user_data.identifier} -> Found: {user_record is not None}")
             else:
                 # If identifier is not email, search through all users
+                print(f"Searching for user by identifier: {user_data.identifier}")
                 for email, user in IN_MEMORY_USERS.items():
                     if (user_data.user_type == "student" and user.get("enrollment_no") == user_data.identifier) or \
                        (user_data.user_type == "faculty" and user.get("teacher_id") == user_data.identifier) or \
                        (user.get("email") == user_data.identifier):
                         user_record = user
+                        print(f"Found user by identifier: {email}")
                         break
             
             if not user_record:
+                print(f"User not found in memory. Available users: {list(IN_MEMORY_USERS.keys())}")
                 raise HTTPException(status_code=401, detail="Invalid credentials")
             
             if not verify_password(user_data.password, user_record['password']):
+                print("Password verification failed")
                 raise HTTPException(status_code=401, detail="Invalid credentials")
             
             # Check user type matches
             if user_record['user_type'] != user_data.user_type:
+                print(f"User type mismatch. Expected: {user_data.user_type}, Got: {user_record['user_type']}")
                 raise HTTPException(status_code=401, detail="Invalid credentials")
             
             access_token = create_access_token(data={"sub": user_record['id']})
@@ -606,6 +626,7 @@ async def login(user_data: UserLogin):
                 teacher_id=user_record.get('teacher_id')
             )
             
+            print(f"Login successful for {user_data.identifier}")
             return TokenResponse(
                 access_token=access_token,
                 token_type="bearer",
@@ -1149,6 +1170,39 @@ async def health_check():
         "service": "campus-management-backend"
     }
 
+# Add a specific debug endpoint for database connection
+@api_router.get("/test-db")
+async def test_db_connection():
+    """Test endpoint to verify database connection"""
+    if db is None:
+        return {
+            "status": "error",
+            "message": "Database not configured",
+            "using_in_memory": True,
+            "in_memory_users": list(IN_MEMORY_USERS.keys())
+        }
+    
+    try:
+        # Test database connection
+        await db.command("ping")
+        
+        # Try to count users
+        user_count = await db.users.count_documents({})
+        
+        return {
+            "status": "success",
+            "message": "Database connection successful",
+            "user_count": user_count,
+            "using_in_memory": False
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Database connection failed: {str(e)}",
+            "using_in_memory": True,
+            "in_memory_users": list(IN_MEMORY_USERS.keys())
+        }
+
 # Add the specific OpenAI endpoint you provided
 @api_router.post("/openai-test")
 async def openai_test_endpoint():
@@ -1199,6 +1253,7 @@ async def openai_test_endpoint():
 # Add a root endpoint for API documentation
 @app.get("/", response_class=HTMLResponse)
 async def main_root():
+    print("Root endpoint called")
     html_content = """
     <!DOCTYPE html>
     <html lang="en">
@@ -1396,6 +1451,7 @@ async def main_root():
 # JSON API endpoint for programmatic access
 @app.get("/api-info")
 async def api_info():
+    print("API info endpoint called")
     return {
         "message": "Campus Management System API",
         "version": "1.0.0",
@@ -1429,8 +1485,47 @@ async def api_info():
     }
 
 
+# Add a debug endpoint to check if API routes are registered
+@app.get("/debug/routes")
+async def debug_routes():
+    routes = []
+    for route in app.routes:
+        routes.append({
+            "path": route.path,
+            "methods": list(route.methods) if hasattr(route, 'methods') else [],
+            "name": route.name if hasattr(route, 'name') else ""
+        })
+    return {"routes": routes}
+
 # Include the router in the main app - moved to the end to ensure all routes are registered
 app.include_router(api_router)
+print(f"API router included with prefix: {api_router.prefix}")
+
+# Add a debug endpoint after router inclusion to verify API routes
+@app.get("/debug/api-routes")
+async def debug_api_routes():
+    api_routes = []
+    for route in app.routes:
+        if route.path.startswith("/api"):
+            api_routes.append({
+                "path": route.path,
+                "methods": list(route.methods) if hasattr(route, 'methods') else [],
+                "name": route.name if hasattr(route, 'name') else ""
+            })
+    return {"api_routes": api_routes, "total_api_routes": len(api_routes)}
+
+# Add a specific debug endpoint for auth routes
+@app.get("/debug/auth-routes")
+async def debug_auth_routes():
+    auth_routes = []
+    for route in app.routes:
+        if "/auth/" in route.path:
+            auth_routes.append({
+                "path": route.path,
+                "methods": list(route.methods) if hasattr(route, 'methods') else [],
+                "name": route.name if hasattr(route, 'name') else ""
+            })
+    return {"auth_routes": auth_routes, "total_auth_routes": len(auth_routes)}
 
 # CORS configuration - read from environment variable or use defaults
 # Use CORS_ORIGINS from environment variables (Render deployment) or defaults for local development

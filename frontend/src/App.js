@@ -327,9 +327,10 @@ const LoginPage = () => {
     
     try {
       console.log('Attempting login with:', formData);
-      console.log('API URL:', `/api/auth/login`);
+      console.log('API URL:', `/auth/login`);
       console.log('API Base URL:', api.defaults.baseURL);
       
+      // The interceptor will automatically add /api prefix
       const response = await api.post("/auth/login", formData);
       console.log('Login successful:', response.data);
       
@@ -406,6 +407,11 @@ Please check:
       return;
     }
     
+    if (signupData.password.length < 6) {
+      alert('Password must be at least 6 characters long');
+      return;
+    }
+    
     if (!signupData.full_name) {
       alert('Please enter your full name');
       return;
@@ -416,46 +422,30 @@ Please check:
       return;
     }
     
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(signupData.email)) {
-      alert('Please enter a valid email address');
-      return;
-    }
-    
-    // Password strength validation
-    if (signupData.password.length < 6) {
-      alert('Password must be at least 6 characters long');
-      return;
-    }
-    
     setLoading(true);
     
     try {
-      console.log('Attempting registration with data:', signupData);
-      console.log('API URL:', `/api/auth/register`);
+      console.log('Attempting signup with:', signupData);
       
+      // The interceptor will automatically add /api prefix
       const response = await api.post("/auth/register", signupData);
-      console.log('Registration successful:', response.data);
+      console.log('Signup successful:', response.data);
       
-      // Log the response data before calling login
-      console.log('Response user data:', response.data.user);
-      console.log('Response access token:', response.data.access_token);
+      // Auto-login after successful registration
+      login(response.data.user, response.data.access_token, rememberMe);
       
-      login(response.data.user, response.data.access_token);
+      // Show success message
+      alert('Registration successful! You are now logged in.');
       
-      // Log before navigation
-      console.log('Navigating to dashboard after signup');
+      // Navigate to dashboard
       navigate('/dashboard', { replace: true });
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error('Signup error:', error);
       console.error('Error response:', error.response);
       
-      let errorMessage = 'Registration failed - please check your connection';
+      let errorMessage = 'Registration failed. Please try again.';
       
       if (error.response) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
         if (error.response.status === 400) {
           if (error.response.data && error.response.data.detail) {
             errorMessage = error.response.data.detail;
@@ -463,33 +453,19 @@ Please check:
             errorMessage = 'Bad request. Please check your input.';
           }
         } else if (error.response.status === 409) {
-          errorMessage = 'Email already registered. Please use a different email or try logging in.';
+          errorMessage = 'Email already registered. Please use a different email or login instead.';
         } else if (error.response.data && error.response.data.detail) {
           errorMessage = error.response.data.detail;
-        } else if (error.response.data && error.response.data.error) {
-          errorMessage = error.response.data.error;
         } else {
           errorMessage = `Registration failed with status ${error.response.status}`;
         }
       } else if (error.request) {
-        // The request was made but no response was received
-        errorMessage = 'Network error. Please check your connection.';
+        errorMessage = 'Network error. Please check your connection and make sure the backend server is running.';
       } else {
-        // Something happened in setting up the request that triggered an Error
         errorMessage = error.message || 'An unknown error occurred';
       }
       
-      // Provide more specific guidance for "Email already registered" error
-      if (errorMessage.includes('Email already registered') || errorMessage.includes('already registered')) {
-        alert(`${errorMessage}
-
-Please try:
-1. Using a different email address
-2. If you already have an account, go to the Login tab
-3. Check if you've used this email before`);
-      } else {
-        alert(errorMessage);
-      }
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }
