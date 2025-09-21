@@ -40,9 +40,10 @@ print("==================================")
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
 # Use MONGO_URI instead of MONGO_URL to match Render environment variables
 MONGO_URI = os.environ.get("MONGO_URI", "mongodb://localhost:27017/mydb")
-DB_NAME = os.environ.get("DB_NAME", "campus_management")
+# Debug: Print the actual MONGO_URI being used
+print(f"MONGO_URI from environment: {os.environ.get('MONGO_URI', 'Not set')}")
+DB_NAME = os.environ.get("DB_NAME", "campusDB")
 JWT_SECRET = os.environ.get("JWT_SECRET", "change-me-in-prod")
-DB_NAME = os.environ.get("DB_NAME", "campus_management")
 
 import logging
 if not OPENROUTER_API_KEY:
@@ -61,7 +62,11 @@ db = None
 try:
     # Use MONGO_URI instead of MONGO_URL to match Render environment variables
     mongo_uri = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/campus_management')
-    db_name = os.environ.get('DB_NAME', 'campus_management')
+    db_name = os.environ.get('DB_NAME', 'campusDB')
+    
+    # Debug: Print the values being used
+    print(f"Using mongo_uri: {mongo_uri}")
+    print(f"Using db_name: {db_name}")
     
     if mongo_uri and db_name:
         print(f"Attempting to connect to MongoDB: {mongo_uri} with database: {db_name}")
