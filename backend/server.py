@@ -61,7 +61,7 @@ client = None
 db = None
 try:
     # Use MONGO_URI instead of MONGO_URL to match Render environment variables
-    mongo_uri = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/campus_management')
+    mongo_uri = os.environ.get('MONGO_URI')
     db_name = os.environ.get('DB_NAME', 'campusDB')
     
     # Debug: Print the values being used
