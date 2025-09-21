@@ -3,6 +3,10 @@
     {
       "source": "/api/:path*",
       "destination": "https://campus-management-backend-3x1h.onrender.com/api/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ],
   "headers": [
