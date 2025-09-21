@@ -1,143 +1,189 @@
-# Campus Management System
+# 🎓 Campus Management System  
 
-A comprehensive campus management system with AI-powered multilingual chat assistance.
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) 
+[![Python](https://img.shields.io/badge/Python-3.8+-blue?logo=python&logoColor=white)](https://www.python.org/) 
+[![React](https://img.shields.io/badge/React-18-blue?logo=react&logoColor=white)](https://reactjs.org/) 
+[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-green?logo=mongodb&logoColor=white)](https://www.mongodb.com/) 
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100.0-lightblue?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/) 
+[![Vercel](https://img.shields.io/badge/Vercel-Deploy-black?logo=vercel&logoColor=white)](https://vercel.com/) 
+[![Render](https://img.shields.io/badge/Render-Deploy-orange?logo=render&logoColor=white)](https://render.com/)  
 
-## Project Structure
+A **comprehensive campus management platform** with AI-powered **multilingual chat assistance**, built for modern academic institutions.  
+
+This system helps students, faculty, and administrators manage academics, communication, and campus services through a **secure and user-friendly platform**.  
+
+---
+
+## 🌐 High-Level Mindmap  
+
+```mermaid
+mindmap
+  root((Campus Management System))
+    Frontend
+      React
+      Tailwind CSS
+      Axios
+      Vercel Deployment
+    Backend
+      FastAPI
+      JWT Authentication
+      AI Chat (OpenRouter/DeepSeek)
+      MongoDB Integration
+      Render Deployment
+    Database
+      MongoDB Atlas
+      Users
+      Complaints
+      Forms
+      Notices
+      Conversations
+    Features
+      Authentication
+      AI-Powered Chat
+      Student Portal
+      Complaints & Forms
+      Notice Board
+      Academic Calendar
+      Communication Tools
+    Security
+      JWT Tokens
+      Password Hashing
+      API Key Protection
+      CORS Policy
+````
+
+---
+
+## 🚀 Features
+
+✅ **Authentication System** – Multi-user (student, faculty, general) with secure JWT tokens
+✅ **AI-Powered Chat Assistant** – Multilingual support (English, Hindi, Gujarati, Telugu, Rajasthani, Urdu)
+✅ **Student Portal** – Profiles, academic records, fee tracking, documents
+✅ **Campus Services** – Complaints, forms, notices, academic calendar
+✅ **Communication Tools** – Integrated contact info, WhatsApp & social media support
+✅ **Security First** – Password hashing, API key protection, CORS, SSL/TLS
+
+---
+
+## 🏗️ Project Structure
 
 ```
-campus-management/
+Campus-Management-System/
 ├── backend/          # FastAPI backend
+│   ├── server.py
+│   ├── requirements.txt
+│   ├── render.yaml
+│   └── .env.example
 ├── frontend/         # React frontend
-└── README.md         # This file
+│   ├── src/
+│   │   ├── components/
+│   │   ├── utils/api.js
+│   │   └── api/ (Vercel functions)
+│   ├── vercel.json
+│   ├── package.json
+│   └── .env.example
+├── documentation/    # Additional docs
+└── README.md
 ```
 
-## Prerequisites
+---
 
-- Python 3.8+
-- Node.js 14+
-- MongoDB (local or cloud instance)
-- npm or yarn
+## ⚙️ Tech Stack
 
-## Local Development Setup
+| Frontend                                                                         | Backend                                                                                          | Database                                                                                   | Deployment                                                                                                                                                                              | AI                       |
+| -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
+| ![React](https://img.shields.io/badge/React-18-blue?logo=react\&logoColor=white) | ![FastAPI](https://img.shields.io/badge/FastAPI-0.100.0-lightblue?logo=fastapi\&logoColor=white) | ![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-green?logo=mongodb\&logoColor=white) | ![Vercel](https://img.shields.io/badge/Vercel-Deploy-black?logo=vercel\&logoColor=white) <br> ![Render](https://img.shields.io/badge/Render-Deploy-orange?logo=render\&logoColor=white) | OpenRouter AI / DeepSeek |
+
+---
+
+## 🖥️ Local Development Setup
 
 ### Backend Setup
 
-1. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate   # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+cp .env.example .env
+python server.py
+```
 
-2. Create a virtual environment:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-
-3. Install Python dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. Create a `.env` file based on `.env.example`:
-   ```bash
-   cp .env.example .env
-   ```
-
-5. Update the `.env` file with your configuration:
-   - Set your MongoDB connection string
-   - Add your OpenRouter API key (get one at https://openrouter.ai/)
-   - Update CORS origins if needed
-
-6. Run the backend server:
-   ```bash
-   python server.py
-   ```
-   
-   The backend will be available at http://localhost:8000
+🔗 Backend will run on: [http://localhost:8000](http://localhost:8000)
 
 ### Frontend Setup
 
-1. Navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
+```bash
+cd frontend
+npm install --legacy-peer-deps
+cp .env.example .env
+npx craco start
+```
 
-2. Install dependencies (use --legacy-peer-deps to avoid conflicts):
-   ```bash
-   npm install --legacy-peer-deps
-   # or
-   yarn install
-   ```
+🔗 Frontend will run on: [http://localhost:3000](http://localhost:3000)
 
-3. Create a `.env` file based on `.env.example`:
-   ```bash
-   cp .env.example .env
-   ```
+---
 
-4. Run the frontend development server:
-   ```bash
-   npx craco start
-   ```
-   
-   The frontend will be available at http://localhost:3000
-
-## Quick Start Scripts
-
-For easier development, you can use the provided PowerShell scripts:
-
-- `start_backend.ps1` - Starts only the backend server
-- `start_frontend.ps1` - Starts only the frontend server
-- `start_fresh.ps1` - Attempts to start both servers with a clean state
-
-## Environment Variables
+## 🔑 Environment Variables
 
 ### Backend (.env)
-- `CORS_ORIGINS`: Comma-separated list of allowed origins (default: http://localhost:3000)
-- `MONGO_URL`: MongoDB connection string
-- `DB_NAME`: Database name
-- `JWT_SECRET`: Secret key for JWT token generation
-- `OPENROUTER_API_KEY`: API key for OpenRouter AI services
+
+```env
+MONGO_URI=your-mongodb-uri
+DB_NAME=campusDB
+JWT_SECRET=your-jwt-secret
+OPENROUTER_API_KEY=your-openrouter-api-key
+DEEPSEEK_API_KEY=your-deepseek-api-key
+CORS_ORIGINS=http://localhost:3000
+```
 
 ### Frontend (.env)
-- `REACT_APP_BACKEND_URL`: Base URL for backend API (default: http://localhost:8000/api)
 
-## API Endpoints
+```env
+REACT_APP_BACKEND_URL=http://localhost:8000/api
+PORT=3000
+```
 
-The backend API is available at `/api` prefix:
+---
 
-- `POST /api/auth/login` - User login
-- `POST /api/auth/register` - User registration
-- `POST /api/chat` - AI chat endpoint
-- `POST /api/complaints` - Submit complaints
-- `GET /api/complaints` - Get user complaints
-- `POST /api/forms` - Submit forms
-- `GET /api/forms` - Get user forms
-- `GET /api/notices` - Get campus notices
+## 📡 API Endpoints
 
-## Troubleshooting
+| Method | Endpoint             | Description         |
+| ------ | -------------------- | ------------------- |
+| POST   | `/api/auth/register` | Register new user   |
+| POST   | `/api/auth/login`    | User login          |
+| POST   | `/api/chat`          | AI chat assistant   |
+| GET    | `/api/chat/history`  | Get chat history    |
+| POST   | `/api/complaints`    | Submit complaint    |
+| GET    | `/api/complaints`    | Get user complaints |
+| POST   | `/api/forms`         | Submit form         |
+| GET    | `/api/forms`         | Get submitted forms |
+| GET    | `/api/notices`       | Get campus notices  |
 
-### "Not Found" Errors on Login/Signup
+---
 
-1. Ensure the backend server is running on port 8000
-2. Check that CORS is properly configured in the backend `.env` file
-3. Verify the frontend `.env` file has the correct `REACT_APP_BACKEND_URL`
-4. Check browser console for network errors
-5. Make sure MongoDB is running and accessible
+## 🛠️ Troubleshooting
 
-### Common Issues
+1. **CORS Errors** → Update `CORS_ORIGINS` in backend `.env`
+2. **MongoDB Issues** → Ensure DB is running and URI is correct
+3. **API Key Errors** → Verify OpenRouter/DeepSeek keys
+4. **Frontend Not Connecting** → Check `REACT_APP_BACKEND_URL` in `.env`
 
-1. **CORS Errors**: Make sure `CORS_ORIGINS` in the backend `.env` includes your frontend URL
-2. **MongoDB Connection**: Verify MongoDB is running and the connection string is correct
-3. **API Key Issues**: Ensure your OpenRouter API key is valid and has credits
-4. **Dependency Conflicts**: Use `npm install --legacy-peer-deps` to avoid React version conflicts
+---
 
-## Deployment
+## 🚀 Deployment
 
-For deployment instructions, see [DEPLOYMENT.md](backend/DEPLOYMENT.md).
+* **Frontend** → Vercel (`vercel.json` for rewrites & proxy)
+* **Backend** → Render (`render.yaml` for config & environment)
 
-## Verification
+🔗 API Docs: [http://localhost:8000/docs](http://localhost:8000/docs)
 
-Once both servers are running:
-- Backend: http://localhost:8000
-- Frontend: http://localhost:3000
-- API Docs: http://localhost:8000/docs
+---
+
+## 👨‍💻 Author
+
+**Avin Raj** – Developer of Campus Management System
+📌 Built with passion for students, faculty & institutions ✨
+
+```
+
