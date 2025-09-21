@@ -40,6 +40,7 @@ print("==================================")
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
 # Use MONGO_URI instead of MONGO_URL to match Render environment variables
 MONGO_URI = os.environ.get("MONGO_URI", "mongodb://localhost:27017/mydb")
+DB_NAME = os.environ.get("DB_NAME", "campus_management")
 JWT_SECRET = os.environ.get("JWT_SECRET", "change-me-in-prod")
 DB_NAME = os.environ.get("DB_NAME", "campus_management")
 
@@ -1190,9 +1191,6 @@ async def openai_test_endpoint():
             "error": str(e)
         }
 
-# Include the router in the main app
-app.include_router(api_router)
-
 # Add a root endpoint for API documentation
 @app.get("/", response_class=HTMLResponse)
 async def main_root():
@@ -1425,6 +1423,9 @@ async def api_info():
         }
     }
 
+
+# Include the router in the main app - moved to the end to ensure all routes are registered
+app.include_router(api_router)
 
 # CORS configuration - read from environment variable or use defaults
 # Use CORS_ORIGINS from environment variables (Render deployment) or defaults for local development
