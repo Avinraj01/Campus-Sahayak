@@ -39,7 +39,7 @@ print("==================================")
 
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
 # Use MONGO_URI instead of MONGO_URL to match Render environment variables
-MONGO_URI = os.environ.get("MONGO_URI", "mongodb://localhost:27017/mydb")
+MONGO_URI = os.environ.get("MONGO_URI")
 # Debug: Print the actual MONGO_URI being used
 print(f"MONGO_URI from environment: {os.environ.get('MONGO_URI', 'Not set')}")
 DB_NAME = os.environ.get("DB_NAME", "campusDB")
@@ -61,7 +61,7 @@ client = None
 db = None
 try:
     # Use MONGO_URI instead of MONGO_URL to match Render environment variables
-    mongo_uri = os.environ.get('MONGO_URI')
+    mongo_uri = MONGO_URI
     db_name = os.environ.get('DB_NAME', 'campusDB')
     
     # Debug: Print the values being used
