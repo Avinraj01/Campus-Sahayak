@@ -185,5 +185,3 @@ PORT=3000
 **Avin Raj** – Developer of Campus Management System
 📌 Built with passion for students, faculty & institutions ✨
 
-```
-
