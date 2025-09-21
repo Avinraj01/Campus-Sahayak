@@ -7,8 +7,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to Render
-        env:
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
         run: |
-          curl -X POST $RENDER_DEPLOY_HOOK
+          curl -X POST "https://api.render.com/deploy/srv-d36pnp2dbo4c73dv89o0?key=AnDLZn1zmGA"

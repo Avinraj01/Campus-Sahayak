@@ -5,7 +5,7 @@
       "destination": "https://campus-management-backend-3x1h.onrender.com/api/:path*"
     },
     {
-      "source": "/(.*)",
+      "source": "/(?!api/).*",
       "destination": "/index.html"
     }
   ],
