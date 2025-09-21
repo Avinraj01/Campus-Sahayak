@@ -5,7 +5,7 @@ export const testApiConnection = async () => {
     console.log('Testing API connection...');
     
     // Test the register endpoint
-    const response = await api.post('/api/auth/register', {
+    const response = await api.post('/auth/register', {
       email: 'frontendtest@example.com',
       password: 'password123',
       user_type: 'student',

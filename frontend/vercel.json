@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://campus-management-backend-y733.onrender.com/api/:path*"
+      "destination": "https://campus-management-backend-3x1h.onrender.com/api/:path*"
     }
   ],
   "headers": [
@@ -15,7 +15,7 @@
         },
         {
           "key": "Access-Control-Allow-Origin",
-          "value": "https://campus-management-system-ten.vercel.app"
+          "value": "https://campus-management-system-frontend.vercel.app"
         },
         {
           "key": "Access-Control-Allow-Methods",

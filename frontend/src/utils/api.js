@@ -28,8 +28,10 @@ api.interceptors.request.use(
     // For local development with no backend URL set, or when using localhost backend,
     // we need to add /api prefix to the URL
     // For Vercel deployment with proxy, the URL should not have /api prefix as it's handled by the proxy
-    if ((!process.env.REACT_APP_BACKEND_URL || process.env.REACT_APP_BACKEND_URL.includes('localhost')) 
-        && config.url && !config.url.startsWith('/api')) {
+    // Check if we're in Vercel deployment (production) by checking if REACT_APP_BACKEND_URL is set and not localhost
+    const isVercelDeployment = process.env.REACT_APP_BACKEND_URL && !process.env.REACT_APP_BACKEND_URL.includes('localhost');
+    
+    if (!isVercelDeployment && config.url && !config.url.startsWith('/api')) {
       config.url = `/api${config.url}`;
     }
     

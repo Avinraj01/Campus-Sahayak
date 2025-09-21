@@ -15,7 +15,7 @@ export const testApiConnection = async () => {
     
     // Test the register endpoint with a test user
     try {
-      const registerResponse = await api.post("/api/auth/register", {
+      const registerResponse = await api.post("/auth/register", {
         email: 'frontendtest@example.com',
         password: 'password123',
         user_type: 'student',
@@ -28,7 +28,7 @@ export const testApiConnection = async () => {
     
     // Test the login endpoint with invalid credentials (should get 401)
     try {
-      const loginResponse = await api.post("/api/auth/login", {
+      const loginResponse = await api.post("/auth/login", {
         identifier: 'test@example.com',
         password: 'wrongpassword',
         user_type: 'student'
