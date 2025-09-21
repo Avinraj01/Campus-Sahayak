@@ -32,13 +32,14 @@ if os.path.exists('.env'):
 print("=== Environment Variables Debug ===")
 print(f"OPENROUTER_API_KEY: {os.environ.get('OPENROUTER_API_KEY', 'Not set')[:20] if os.environ.get('OPENROUTER_API_KEY') else 'Not set'}...")
 print(f"OPENROUTER_MODEL: {os.environ.get('OPENROUTER_MODEL', 'Not set')}")
-print(f"MONGO_URL: {os.environ.get('MONGO_URL', 'Not set')[:30] if os.environ.get('MONGO_URL') else 'Not set'}...")
+print(f"MONGO_URI: {os.environ.get('MONGO_URI', 'Not set')[:30] if os.environ.get('MONGO_URI') else 'Not set'}...")
 print(f"DB_NAME: {os.environ.get('DB_NAME', 'Not set')}")
 print(f"JWT_SECRET: {'Set' if os.environ.get('JWT_SECRET') else 'Not set'}")
 print("==================================")
 
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
-MONGO_URL = os.environ.get("MONGO_URL", "mongodb://localhost:27017/mydb")
+# Use MONGO_URI instead of MONGO_URL to match Render environment variables
+MONGO_URI = os.environ.get("MONGO_URI", "mongodb://localhost:27017/mydb")
 JWT_SECRET = os.environ.get("JWT_SECRET", "change-me-in-prod")
 DB_NAME = os.environ.get("DB_NAME", "campus_management")
 
@@ -57,12 +58,19 @@ IN_MEMORY_USERS = {}
 client = None
 db = None
 try:
-    mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017/campus_management')
+    # Use MONGO_URI instead of MONGO_URL to match Render environment variables
+    mongo_uri = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/campus_management')
     db_name = os.environ.get('DB_NAME', 'campus_management')
     
-    if mongo_url and db_name:
-        print(f"Attempting to connect to MongoDB: {mongo_url} with database: {db_name}")
-        client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=5000)  # 5 second timeout
+    if mongo_uri and db_name:
+        print(f"Attempting to connect to MongoDB: {mongo_uri} with database: {db_name}")
+        # Add SSL options for Render deployment
+        client = AsyncIOMotorClient(
+            mongo_uri, 
+            serverSelectionTimeoutMS=5000,  # 5 second timeout
+            tls=True,
+            tlsAllowInvalidCertificates=True
+        )
         # Test connection explicitly
         db = client[db_name]
         print("MongoDB client initialized successfully")
@@ -1419,6 +1427,7 @@ async def api_info():
 
 
 # CORS configuration - read from environment variable or use defaults
+# Use CORS_ORIGINS from environment variables (Render deployment) or defaults for local development
 CORS_ORIGINS = os.environ.get('CORS_ORIGINS', 'http://localhost:3000,https://campus-management-system-ten.vercel.app,https://campus-management-system-frontend.vercel.app')
 
 # Handle both single origin and multiple origins
@@ -1431,11 +1440,19 @@ else:
 if 'http://localhost:3000' not in origins:
     origins.append('http://localhost:3000')
 
-# Ensure Vercel deployment is included
-if 'https://campus-management-system-ten.vercel.app' not in origins:
-    origins.append('https://campus-management-system-ten.vercel.app')
+# Ensure common Vercel deployment URLs are included
+vercel_domains = [
+    'https://campus-management-system-ten.vercel.app',
+    'https://campus-management-system-frontend.vercel.app',
+    'https://campus-management-system-git-deploy-r-4b7e77-avin-rajs-projects.vercel.app',
+    'https://campus-management-system-jm6ktfcdz-avin-rajs-projects.vercel.app'
+]
 
-# Add additional Vercel preview URLs pattern (using regex for wildcard matching)
+for domain in vercel_domains:
+    if domain not in origins:
+        origins.append(domain)
+
+# Add pattern matching for Vercel preview URLs (this is conceptual - actual regex matching would be handled by the CORS middleware)
 origins.append('https://campus-management-system-ten-git-.*.vercel.app')
 origins.append('https://campus-management-system-ten-.*.vercel.app')
 
@@ -1464,5 +1481,8 @@ async def shutdown_db_client():
 if __name__ == "__main__":
     import uvicorn
     import os
+    # Use the PORT environment variable provided by Render, default to 8000 for local development
     port = int(os.environ.get("PORT", 8000))
-    uvicorn.run(app, host="0.0.0.0", port=port, reload=True)
+    # Don't use reload in production (Render deployment)
+    reload = os.environ.get("PORT") is None  # Only use reload for local development
+    uvicorn.run(app, host="0.0.0.0", port=port, reload=reload)
