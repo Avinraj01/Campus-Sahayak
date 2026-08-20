@@ -508,7 +508,7 @@ Please try:
             <BookOpen className="h-8 w-8 text-white" />
           </div>
           <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Campus Management System
+            Campus Sahayak
           </CardTitle>
           <p className="text-gray-600">Access your campus portal</p>
         </CardHeader>
