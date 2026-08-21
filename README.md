@@ -28,6 +28,40 @@
 
 ---
 
+# 🎥 User Experience
+
+### 🌐 Live Prototype
+
+<div align="center">
+
+<a href="https://campus-management-system-frontend.vercel.app/login">
+  <img src="https://image.thum.io/get/width/1200/crop/900/https://campus-management-system-frontend.vercel.app/login" alt="Campus Sahayak live login page" width="850" />
+</a>
+
+<br />
+
+**[🚀 Open Campus Sahayak](https://campus-management-system-frontend.vercel.app/login)**
+
+<sub>Click the preview image to open the live application.</sub>
+
+</div>
+
+### ▶️ User Experience Video
+
+<div align="center">
+
+<a href="https://www.youtube.com/shorts/yBuFif_eZp8">
+  <img src="https://img.youtube.com/vi/yBuFif_eZp8/maxresdefault.jpg" alt="Campus Sahayak User Experience Demo" width="700" />
+</a>
+
+<br />
+
+**▶️ Click the thumbnail to watch the User Experience demo on YouTube**
+
+</div>
+
+---
+
 ## 🌐 What Problem Does It Solve?
 
 Students repeatedly need answers about fees, scholarships, timetables, notices, forms, complaints and administrative procedures. Traditional support depends heavily on office hours and repetitive staff responses.
@@ -309,40 +343,6 @@ flowchart LR
 ```
 
 > These are documented validation cases. They are not a claim that every case is automatically executed in CI.
-
----
-
-# 🎥 User Experience
-
-### 🌐 Live Prototype
-
-<div align="center">
-
-<a href="https://campus-management-system-frontend.vercel.app/login">
-  <img src="https://image.thum.io/get/width/1200/crop/900/https://campus-management-system-frontend.vercel.app/login" alt="Campus Sahayak live login page" width="850" />
-</a>
-
-<br />
-
-**[🚀 Open Campus Sahayak](https://campus-management-system-frontend.vercel.app/login)**
-
-<sub>Click the preview image to open the live application.</sub>
-
-</div>
-
-### ▶️ User Experience Video
-
-<div align="center">
-
-<a href="https://www.youtube.com/shorts/yBuFif_eZp8">
-  <img src="https://img.youtube.com/vi/yBuFif_eZp8/maxresdefault.jpg" alt="Campus Sahayak User Experience Demo" width="700" />
-</a>
-
-<br />
-
-**▶️ Click the thumbnail to watch the User Experience demo on YouTube**
-
-</div>
 
 ---
 
