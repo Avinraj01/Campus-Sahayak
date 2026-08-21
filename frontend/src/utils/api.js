@@ -1,10 +1,13 @@
 import axios from "axios";
 
-// Use the environment variable or fallback to localhost for development
-// For Vercel deployment, we use the proxy path /api which will be rewritten to the actual backend
-const BASE_URL = process.env.REACT_APP_BACKEND_URL || "/api";
+// In production (Vercel), use the same-origin API path so Vercel's rewrite
+// forwards requests to the Render backend without browser CORS issues.
+// In local development, allow REACT_APP_BACKEND_URL to point to the backend.
+const BASE_URL = process.env.NODE_ENV === "production"
+  ? ""
+  : (process.env.REACT_APP_BACKEND_URL || "");
 
-console.log("API Base URL:", BASE_URL);
+console.log("API Base URL:", BASE_URL || "(same-origin)");
 
 export const api = axios.create({
   baseURL: BASE_URL,
@@ -12,7 +15,7 @@ export const api = axios.create({
     "Content-Type": "application/json",
   },
   // Add timeout to prevent hanging requests
-  timeout: 30000, // Increased timeout to 30 seconds for better reliability
+  timeout: 30000,
 });
 
 // Add a request interceptor to automatically add the Authorization header
@@ -40,13 +43,11 @@ api.interceptors.response.use(
   },
   (error) => {
     console.error("API Error:", error.response || error.message);
-    // Handle network errors
     if (!error.response) {
       console.error("Network Error: Please check your internet connection and backend server status");
-      // Provide more specific error message
-      if (error.code === 'ECONNABORTED') {
+      if (error.code === "ECONNABORTED") {
         console.error("Request timeout - the server is taking too long to respond");
-      } else if (error.message.includes('Network Error')) {
+      } else if (error.message.includes("Network Error")) {
         console.error("Network connectivity issue - please check if the backend server is running");
       }
     } else {
