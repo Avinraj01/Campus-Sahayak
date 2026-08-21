@@ -59,6 +59,43 @@ Students repeatedly need answers about fees, scholarships, timetables, notices, 
 
 ---
 
+# 📑 Project Proposal & Solution Showcase
+
+<div align="center">
+
+### 🏆 Smart India Hackathon 2025 · Campus Sahayak
+
+**Problem Statement:** Language Agnostic Chatbot · **PS ID:** 25104 · **Team:** SuperNovaZ
+
+<br />
+
+<a href="https://drive.google.com/file/d/1YcE-irj4RXd6L7_cES5bzSNpen75lQic/view">
+  <img src="https://drive.google.com/thumbnail?id=1YcE-irj4RXd6L7_cES5bzSNpen75lQic&sz=w1200" alt="Campus Sahayak Smart India Hackathon proposal preview" width="850" />
+</a>
+
+<br />
+
+**[📄 Open Full Proposal on Google Drive](https://drive.google.com/file/d/1YcE-irj4RXd6L7_cES5bzSNpen75lQic/view)**
+
+</div>
+
+### 🖼️ Proposal Pages
+
+The six-page proposal covers the solution workflow, technical approach, system architecture, feasibility, impact, benefits, research and comparison with existing systems. fileciteturn128file0
+
+| Page | Focus | Navigation |
+|---|---|---|
+| **01** | Problem statement & Campus Sahayak introduction | [Open page 1](https://drive.google.com/file/d/1YcE-irj4RXd6L7_cES5bzSNpen75lQic/view#page=1) |
+| **02** | Proposed solution, multilingual workflow & innovation | [◀ Previous](https://drive.google.com/file/d/1YcE-irj4RXd6L7_cES5bzSNpen75lQic/view#page=1) · [Next ▶](https://drive.google.com/file/d/1YcE-irj4RXd6L7_cES5bzSNpen75lQic/view#page=2) |
+| **03** | Technical approach, architecture & technology stack | [◀ Previous](https://drive.google.com/file/d/1YcE-irj4RXd6L7_cES5bzSNpen75lQic/view#page=2) · [Next ▶](https://drive.google.com/file/d/1YcE-irj4RXd6L7_cES5bzSNpen75lQic/view#page=3) |
+| **04** | Feasibility, risks & problem-to-solution fit | [◀ Previous](https://drive.google.com/file/d/1YcE-irj4RXd6L7_cES5bzSNpen75lQic/view#page=3) · [Next ▶](https://drive.google.com/file/d/1YcE-irj4RXd6L7_cES5bzSNpen75lQic/view#page=4) |
+| **05** | Impact, benefits, scalability & user experience | [◀ Previous](https://drive.google.com/file/d/1YcE-irj4RXd6L7_cES5bzSNpen75lQic/view#page=4) · [Next ▶](https://drive.google.com/file/d/1YcE-irj4RXd6L7_cES5bzSNpen75lQic/view#page=5) |
+| **06** | Research, references, comparison & prototype | [◀ Previous](https://drive.google.com/file/d/1YcE-irj4RXd6L7_cES5bzSNpen75lQic/view#page=5) · [Next ▶](https://drive.google.com/file/d/1YcE-irj4RXd6L7_cES5bzSNpen75lQic/view#page=6) |
+
+> **Note:** GitHub README Markdown cannot execute JavaScript, so true in-page Previous/Next controls are not possible directly inside `README.md`. The navigation above uses Google Drive's PDF page anchors. The full six-page source document is available from the preview above. The uploaded proposal contains the workflow on page 2, architecture and technology stack on page 3, feasibility on page 4, impact on page 5, and research/references on page 6. fileciteturn128file0
+
+---
+
 # 🧭 High-Level Mind Map
 
 ```mermaid
