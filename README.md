@@ -294,7 +294,19 @@ flowchart LR
 
 ### 🌐 Live Prototype
 
-**[Open Campus Sahayak](https://campus-management-system-frontend.vercel.app)**
+<div align="center">
+
+<a href="https://campus-management-system-frontend.vercel.app/login">
+  <img src="https://image.thum.io/get/width/1200/crop/900/https://campus-management-system-frontend.vercel.app/login" alt="Campus Sahayak live login page" width="850" />
+</a>
+
+<br />
+
+**[🚀 Open Campus Sahayak](https://campus-management-system-frontend.vercel.app/login)**
+
+<sub>Click the preview image to open the live application.</sub>
+
+</div>
 
 ### ▶️ User Experience Video
 
@@ -309,10 +321,6 @@ flowchart LR
 **▶️ Click the thumbnail to watch the User Experience demo on YouTube**
 
 </div>
-
-### 🧪 Prototype / Demo
-
-**Prototype / demo:** `Add your final prototype URL here`
 
 ---
 
