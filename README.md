@@ -298,9 +298,17 @@ flowchart LR
 
 ### ▶️ User Experience Video
 
-**YouTube:** `Add your final YouTube URL here`
+<div align="center">
 
-The supplied project material references a User Experience video, but no actual YouTube URL was available in the material provided. A real URL should be inserted here rather than using an invented link.
+<a href="https://www.youtube.com/shorts/yBuFif_eZp8">
+  <img src="https://img.youtube.com/vi/yBuFif_eZp8/maxresdefault.jpg" alt="Campus Sahayak User Experience Demo" width="700" />
+</a>
+
+<br />
+
+**▶️ Click the thumbnail to watch the User Experience demo on YouTube**
+
+</div>
 
 ### 🧪 Prototype / Demo
 
