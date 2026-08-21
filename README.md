@@ -28,35 +28,23 @@
 
 ---
 
-# 🎥 User Experience
-
-### 🌐 Live Prototype
+# 📑 Project Proposal & Solution Showcase
 
 <div align="center">
 
-<a href="https://campus-management-system-frontend.vercel.app/login">
-  <img src="https://image.thum.io/get/width/1200/crop/900/https://campus-management-system-frontend.vercel.app/login" alt="Campus Sahayak live login page" width="850" />
+### 🏆 Smart India Hackathon 2025 · Campus Sahayak
+
+**Problem Statement:** Language Agnostic Chatbot · **PS ID:** 25104 · **Team:** SuperNovaZ
+
+<br />
+
+<a href="https://drive.google.com/file/d/1YcE-irj4RXd6L7_cES5bzSNpen75lQic/view">
+  <img src="https://drive.google.com/thumbnail?id=1YcE-irj4RXd6L7_cES5bzSNpen75lQic&sz=w1200" alt="Campus Sahayak Smart India Hackathon proposal preview" width="850" />
 </a>
 
 <br />
 
-**[🚀 Open Campus Sahayak](https://campus-management-system-frontend.vercel.app/login)**
-
-<sub>Click the preview image to open the live application.</sub>
-
-</div>
-
-### ▶️ User Experience Video
-
-<div align="center">
-
-<a href="https://www.youtube.com/shorts/yBuFif_eZp8">
-  <img src="https://img.youtube.com/vi/yBuFif_eZp8/maxresdefault.jpg" alt="Campus Sahayak User Experience Demo" width="700" />
-</a>
-
-<br />
-
-**▶️ Click the thumbnail to watch the User Experience demo on YouTube**
+**[◀ Previous Page](https://drive.google.com/file/d/1YcE-irj4RXd6L7_cES5bzSNpen75lQic/view#page=1)** &nbsp;&nbsp; **[📄 Open Proposal](https://drive.google.com/file/d/1YcE-irj4RXd6L7_cES5bzSNpen75lQic/view#page=1)** &nbsp;&nbsp; **[Next Page ▶](https://drive.google.com/file/d/1YcE-irj4RXd6L7_cES5bzSNpen75lQic/view#page=2)**
 
 </div>
 
@@ -93,23 +81,35 @@ Students repeatedly need answers about fees, scholarships, timetables, notices, 
 
 ---
 
-# 📑 Project Proposal & Solution Showcase
+# 🎥 User Experience
+
+### 🌐 Live Prototype
 
 <div align="center">
 
-### 🏆 Smart India Hackathon 2025 · Campus Sahayak
-
-**Problem Statement:** Language Agnostic Chatbot · **PS ID:** 25104 · **Team:** SuperNovaZ
-
-<br />
-
-<a href="https://drive.google.com/file/d/1YcE-irj4RXd6L7_cES5bzSNpen75lQic/view">
-  <img src="https://drive.google.com/thumbnail?id=1YcE-irj4RXd6L7_cES5bzSNpen75lQic&sz=w1200" alt="Campus Sahayak Smart India Hackathon proposal preview" width="850" />
+<a href="https://campus-management-system-frontend.vercel.app/login">
+  <img src="https://image.thum.io/get/width/1200/crop/900/https://campus-management-system-frontend.vercel.app/login" alt="Campus Sahayak live login page" width="850" />
 </a>
 
 <br />
 
-**[◀ Previous Page](https://drive.google.com/file/d/1YcE-irj4RXd6L7_cES5bzSNpen75lQic/view#page=1)** &nbsp;&nbsp; **[📄 Open Proposal](https://drive.google.com/file/d/1YcE-irj4RXd6L7_cES5bzSNpen75lQic/view#page=1)** &nbsp;&nbsp; **[Next Page ▶](https://drive.google.com/file/d/1YcE-irj4RXd6L7_cES5bzSNpen75lQic/view#page=2)**
+**[🚀 Open Campus Sahayak](https://campus-management-system-frontend.vercel.app/login)**
+
+<sub>Click the preview image to open the live application.</sub>
+
+</div>
+
+### ▶️ User Experience Video
+
+<div align="center">
+
+<a href="https://www.youtube.com/shorts/yBuFif_eZp8">
+  <img src="https://img.youtube.com/vi/yBuFif_eZp8/maxresdefault.jpg" alt="Campus Sahayak User Experience Demo" width="700" />
+</a>
+
+<br />
+
+**▶️ Click the thumbnail to watch the User Experience demo on YouTube**
 
 </div>
 
